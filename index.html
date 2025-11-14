@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sudoku – Your Ad-Free App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --bg: #111827;
+      --card: #020617;
+      --accent: #fbbf24;
+      --accent-soft: #1e293b;
+      --grid-line: #374151;
+      --grid-sub: #4b5563;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --error: #f87171;
+      --given: #e5e7eb;
+      --cell-bg: #020617;
+      --cell-hover: #111827;
+      --cell-selected: #1d4ed8;
+      --cell-related: #1f2937;
+      --cell-highlight: #111827;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #1f2937, #020617 55%);
+      color: var(--text);
+    }
+
+    .app {
+      width: 100%;
+      max-width: 420px;
+      padding: 16px;
+    }
+
+    .card {
+      background: linear-gradient(145deg, #020617, #030712);
+      border-radius: 18px;
+      padding: 16px 14px 14px;
+      box-shadow:
+        0 20px 40px rgba(0, 0, 0, 0.7),
+        0 0 0 1px rgba(148, 163, 184, 0.08);
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    h1 {
+      font-size: 18px;
+      margin: 0;
+      letter-spacing: 0.03em;
+    }
+
+    .subtitle {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .controls-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    select,
+    button {
+      font: inherit;
+    }
+
+    .select-wrap {
+      flex: 1;
+      min-width: 0;
+      position: relative;
+    }
+
+    .select-wrap select {
+      width: 100%;
+      padding: 6px 28px 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: rgba(15, 23, 42, 0.85);
+      color: var(--text);
+      font-size: 12px;
+      outline: none;
+      appearance: none;
+    }
+
+    .select-wrap::after {
+      content: "▾";
+      position: absolute;
+      right: 9px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 10px;
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .btn-pill {
+      border-radius: 999px;
+      border: none;
+      padding: 7px 14px;
+      font-size: 12px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: #020617;
+      background: linear-gradient(135deg, #facc15, #f97316);
+      box-shadow:
+        0 0 0 1px rgba(250, 204, 21, 0.3),
+        0 10px 20px rgba(248, 181, 0, 0.3);
+    }
+
+    .btn-pill:active {
+      transform: translateY(1px);
+      box-shadow:
+        0 0 0 1px rgba(250, 204, 21, 0.3),
+        0 4px 12px rgba(248, 181, 0, 0.4);
+    }
+
+    .info-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .badge {
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
+    }
+
+    .timer {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* GRID */
+
+    .grid-wrap {
+      padding: 10px;
+      border-radius: 12px;
+      background: radial-gradient(circle at top, #020617, #020617 40%, #030712);
+      box-shadow: inset 0 0 0 1px rgba(75, 85, 99, 0.3);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--bg);
+      box-shadow: inset 0 0 0 1px var(--grid-sub);
+    }
+
+    .cell {
+      width: 100%;
+      padding-top: 100%;
+      position: relative;
+      border: 0;
+      background: var(--cell-bg);
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--text);
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .cell-inner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+    }
+
+    .cell:nth-child(3n+1) {
+      border-left: 1px solid var(--grid-sub);
+    }
+
+    .cell:nth-child(-n+9) {
+      border-top: 1px solid var(--grid-sub);
+    }
+
+    .cell {
+      border-right: 1px solid var(--grid-line);
+      border-bottom: 1px solid var(--grid-line);
+    }
+
+    /* Thicker subgrid borders */
+    .cell[data-col="2"],
+    .cell[data-col="5"] {
+      border-right: 2px solid var(--grid-sub);
+    }
+
+    .cell[data-row="2"],
+    .cell[data-row="5"] {
+      border-bottom: 2px solid var(--grid-sub);
+    }
+
+    .cell.given {
+      background: #020617;
+      color: var(--given);
+      font-weight: 700;
+    }
+
+    .cell.empty {
+      color: var(--muted);
+    }
+
+    .cell.selected {
+      background: linear-gradient(145deg, #1d4ed8, #0f172a);
+      color: #fefce8;
+    }
+
+    .cell.related:not(.selected) {
+      background: #020617;
+    }
+
+    .cell.same-value:not(.selected) {
+      background: #111827;
+    }
+
+    .cell.conflict {
+      color: var(--error);
+      text-shadow: 0 0 6px rgba(248, 113, 113, 0.6);
+    }
+
+    .cell.highlight {
+      background: #020617;
+    }
+
+    .cell:active {
+      filter: brightness(1.1);
+    }
+
+    /* Number pad */
+
+    .pad {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+
+    .pad-btn {
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: rgba(15, 23, 42, 0.95);
+      color: var(--text);
+      padding: 10px 0;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .pad-btn.small {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      font-weight: 600;
+    }
+
+    .pad-btn.primary {
+      border-color: rgba(251, 191, 36, 0.7);
+      background: radial-gradient(circle at top, #facc15, #f97316);
+      color: #020617;
+      font-weight: 700;
+      box-shadow:
+        0 0 0 1px rgba(250, 204, 21, 0.5),
+        0 10px 18px rgba(248, 181, 0, 0.4);
+    }
+
+    .pad-btn.toggled {
+      background: rgba(37, 99, 235, 0.1);
+      border-color: #3b82f6;
+      color: #bfdbfe;
+    }
+
+    .pad-btn:active {
+      transform: translateY(1px);
+    }
+
+    .footer {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .footer b {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    @media (max-width: 360px) {
+      .card { padding: 12px 10px; }
+      .cell { font-size: 16px; }
+      .pad-btn { padding: 8px 0; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="card">
+    <div class="header-row">
+      <div class="title-group">
+        <h1>Sudoku</h1>
+        <div class="subtitle">Ad-free. Just numbers and logic.</div>
+      </div>
+    </div>
+
+    <div class="controls-row">
+      <div class="select-wrap">
+        <select id="difficulty">
+          <option value="easy">Easy</option>
+          <option value="medium" selected>Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+      <button id="newGameBtn" class="btn-pill">New Puzzle</button>
+    </div>
+
+    <div class="info-row">
+      <div class="badge">
+        <span class="badge-dot"></span>
+        <span id="statusText">In progress</span>
+      </div>
+      <div class="timer" id="timer">00:00</div>
+    </div>
+
+    <div class="grid-wrap">
+      <div id="grid" class="grid"></div>
+    </div>
+
+    <div class="pad">
+      <button class="pad-btn" data-num="1">1</button>
+      <button class="pad-btn" data-num="2">2</button>
+      <button class="pad-btn" data-num="3">3</button>
+      <button class="pad-btn" data-num="4">4</button>
+      <button class="pad-btn" data-num="5">5</button>
+      <button class="pad-btn" data-num="6">6</button>
+      <button class="pad-btn" data-num="7">7</button>
+      <button class="pad-btn" data-num="8">8</button>
+      <button class="pad-btn" data-num="9">9</button>
+      <button class="pad-btn small" id="eraseBtn">Erase</button>
+      <button class="pad-btn small" id="notesBtn">Notes</button>
+      <button class="pad-btn small" id="clearNotesBtn">Clr Notes</button>
+      <button class="pad-btn small" id="checkBtn">Check</button>
+      <button class="pad-btn small primary" id="hintBtn">Hint</button>
+    </div>
+
+    <div class="footer">
+      Progress is saved locally on this device. <b>No ads. No accounts.</b>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Simple set of puzzles (0 = empty)
+  const PUZZLES = {
+    easy: [
+      "530070000600195000098000060800060003400803001700020006060000280000419005000080079"
+    ],
+    medium: [
+      "009000010040020000000500400050000000060000009000006030600070000000040090000800300"
+    ],
+    hard: [
+      "800000000003600000070090200050007000000045700000100030001000068008500010090000000"
+    ]
+  };
+
+  let board = new Array(81).fill(0);        // current values
+  let given = new Array(81).fill(false);    // fixed cells
+  let notes = Array.from({ length: 81 }, () => new Set());
+  let selectedIndex = null;
+  let notesMode = false;
+  let startTime = null;
+  let timerInterval = null;
+  let currentDifficulty = "medium";
+
+  const gridEl = document.getElementById("grid");
+  const difficultyEl = document.getElementById("difficulty");
+  const newGameBtn = document.getElementById("newGameBtn");
+  const statusText = document.getElementById("statusText");
+  const timerEl = document.getElementById("timer");
+  const eraseBtn = document.getElementById("eraseBtn");
+  const notesBtn = document.getElementById("notesBtn");
+  const clearNotesBtn = document.getElementById("clearNotesBtn");
+  const checkBtn = document.getElementById("checkBtn");
+  const hintBtn = document.getElementById("hintBtn");
+
+  function indexToRC(index) {
+    return { row: Math.floor(index / 9), col: index % 9 };
+  }
+
+  function rcToIndex(row, col) {
+    return row * 9 + col;
+  }
+
+  function loadRandomPuzzle(diff) {
+    const arr = PUZZLES[diff];
+    const puzzle = arr[Math.floor(Math.random() * arr.length)];
+    board = new Array(81).fill(0);
+    given = new Array(81).fill(false);
+    notes = Array.from({ length: 81 }, () => new Set());
+    for (let i = 0; i < 81; i++) {
+      const c = puzzle[i];
+      if (c && c !== "0" && c !== ".") {
+        board[i] = parseInt(c, 10);
+        given[i] = true;
+      }
+    }
+    selectedIndex = null;
+    notesMode = false;
+    notesBtn.classList.remove("toggled");
+    startTimer();
+    statusText.textContent = "In progress";
+    saveState();
+    render();
+  }
+
+  function startTimer() {
+    startTime = Date.now();
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(updateTimer, 1000);
+    updateTimer();
+  }
+
+  function updateTimer() {
+    if (!startTime) {
+      timerEl.textContent = "00:00";
+      return;
+    }
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const m = String(Math.floor(elapsed / 60)).padStart(2, "0");
+    const s = String(elapsed % 60).padStart(2, "0");
+    timerEl.textContent = m + ":" + s;
+  }
+
+  function isValidPlacement(index, value) {
+    if (value === 0) return true;
+    const { row, col } = indexToRC(index);
+    // row
+    for (let c = 0; c < 9; c++) {
+      const idx = rcToIndex(row, c);
+      if (idx !== index && board[idx] === value) return false;
+    }
+    // col
+    for (let r = 0; r < 9; r++) {
+      const idx = rcToIndex(r, col);
+      if (idx !== index && board[idx] === value) return false;
+    }
+    // box
+    const boxRow = Math.floor(row / 3) * 3;
+    const boxCol = Math.floor(col / 3) * 3;
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 3; c++) {
+        const idx = rcToIndex(boxRow + r, boxCol + c);
+        if (idx !== index && board[idx] === value) return false;
+      }
+    }
+    return true;
+  }
+
+  function findConflicts() {
+    const conflicts = new Set();
+    // check rows
+    for (let r = 0; r < 9; r++) {
+      const seen = {};
+      for (let c = 0; c < 9; c++) {
+        const idx = rcToIndex(r, c);
+        const v = board[idx];
+        if (!v) continue;
+        if (seen[v] !== undefined) {
+          conflicts.add(idx);
+          conflicts.add(seen[v]);
+        } else {
+          seen[v] = idx;
+        }
+      }
+    }
+    // check cols
+    for (let c = 0; c < 9; c++) {
+      const seen = {};
+      for (let r = 0; r < 9; r++) {
+        const idx = rcToIndex(r, c);
+        const v = board[idx];
+        if (!v) continue;
+        if (seen[v] !== undefined) {
+          conflicts.add(idx);
+          conflicts.add(seen[v]);
+        } else {
+          seen[v] = idx;
+        }
+      }
+    }
+    // check boxes
+    for (let br = 0; br < 3; br++) {
+      for (let bc = 0; bc < 3; bc++) {
+        const seen = {};
+        for (let r = 0; r < 3; r++) {
+          for (let c = 0; c < 3; c++) {
+            const idx = rcToIndex(br * 3 + r, bc * 3 + c);
+            const v = board[idx];
+            if (!v) continue;
+            if (seen[v] !== undefined) {
+              conflicts.add(idx);
+              conflicts.add(seen[v]);
+            } else {
+              seen[v] = idx;
+            }
+          }
+        }
+      }
+    }
+    return conflicts;
+  }
+
+  function isSolved() {
+    for (let i = 0; i < 81; i++) {
+      if (board[i] === 0) return false;
+    }
+    const conflicts = findConflicts();
+    return conflicts.size === 0;
+  }
+
+  function computeCandidates(index) {
+    if (board[index] !== 0) return new Set();
+    const all = new Set([1,2,3,4,5,6,7,8,9]);
+    const { row, col } = indexToRC(index);
+    for (let c = 0; c < 9; c++) {
+      const v = board[rcToIndex(row, c)];
+      all.delete(v);
+    }
+    for (let r = 0; r < 9; r++) {
+      const v = board[rcToIndex(r, col)];
+      all.delete(v);
+    }
+    const boxRow = Math.floor(row / 3) * 3;
+    const boxCol = Math.floor(col / 3) * 3;
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 3; c++) {
+        const v = board[rcToIndex(boxRow + r, boxCol + c)];
+        all.delete(v);
+      }
+    }
+    return all;
+  }
+
+  function handleCellTap(index) {
+    selectedIndex = index;
+    render();
+  }
+
+  function handleNumberTap(num) {
+    if (selectedIndex === null) return;
+    if (given[selectedIndex]) return;
+
+    if (notesMode) {
+      // toggle notes
+      const set = notes[selectedIndex];
+      if (set.has(num)) set.delete(num);
+      else set.add(num);
+      board[selectedIndex] = 0;
+    } else {
+      notes[selectedIndex].clear();
+      board[selectedIndex] = num;
+      if (isSolved()) {
+        statusText.textContent = "Completed 🎉";
+        if (timerInterval) clearInterval(timerInterval);
+      } else {
+        statusText.textContent = "In progress";
+      }
+    }
+    saveState();
+    render();
+  }
+
+  function handleErase() {
+    if (selectedIndex === null) return;
+    if (given[selectedIndex]) return;
+    board[selectedIndex] = 0;
+    notes[selectedIndex].clear();
+    statusText.textContent = "In progress";
+    saveState();
+    render();
+  }
+
+  function handleCheck() {
+    const conflicts = findConflicts();
+    if (conflicts.size === 0) {
+      statusText.textContent = "No conflicts so far ✅";
+    } else {
+      statusText.textContent = `Conflicts found in ${conflicts.size} cell(s) ❗`;
+    }
+    render(conflicts);
+  }
+
+  function handleHint() {
+    // Very gentle "hint": if only one candidate fits in selected empty cell
+    if (selectedIndex === null || given[selectedIndex]) return;
+    if (board[selectedIndex] !== 0) return;
+    const cands = computeCandidates(selectedIndex);
+    if (cands.size === 1) {
+      const val = Array.from(cands)[0];
+      board[selectedIndex] = val;
+      notes[selectedIndex].clear();
+      statusText.textContent = "Logical hint applied 💡";
+      if (isSolved()) {
+        statusText.textContent = "Completed 🎉";
+        if (timerInterval) clearInterval(timerInterval);
+      }
+      saveState();
+      render();
+    } else {
+      statusText.textContent = "Try pencil marks first – no single candidate yet.";
+    }
+  }
+
+  function toggleNotesMode() {
+    notesMode = !notesMode;
+    notesBtn.classList.toggle("toggled", notesMode);
+  }
+
+  function clearNotes() {
+    if (selectedIndex === null) return;
+    notes[selectedIndex].clear();
+    saveState();
+    render();
+  }
+
+  function saveState() {
+    try {
+      const state = {
+        board,
+        given,
+        notes: notes.map(s => Array.from(s)),
+        difficulty: currentDifficulty,
+        startTime,
+        timestamp: Date.now()
+      };
+      localStorage.setItem("sudokuStateV1", JSON.stringify(state));
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem("sudokuStateV1");
+      if (!raw) return false;
+      const state = JSON.parse(raw);
+      board = state.board || board;
+      given = state.given || given;
+      notes = (state.notes || []).map(arr => new Set(arr));
+      currentDifficulty = state.difficulty || "medium";
+      difficultyEl.value = currentDifficulty;
+      startTime = state.startTime ? state.startTime : Date.now();
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(updateTimer, 1000);
+      updateTimer();
+      statusText.textContent = "Resumed game";
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function render(conflictsOverride) {
+    gridEl.innerHTML = "";
+    const conflicts = conflictsOverride || findConflicts();
+    const selectedVal = selectedIndex !== null ? board[selectedIndex] : null;
+
+    for (let i = 0; i < 81; i++) {
+      const cell = document.createElement("button");
+      cell.className = "cell";
+      const { row, col } = indexToRC(i);
+      cell.dataset.row = row;
+      cell.dataset.col = col;
+
+      const inner = document.createElement("div");
+      inner.className = "cell-inner";
+
+      if (given[i]) {
+        cell.classList.add("given");
+      } else if (board[i] === 0 && notes[i].size === 0) {
+        cell.classList.add("empty");
+      }
+
+      // text or notes
+      if (board[i] !== 0) {
+        inner.textContent = board[i];
+      } else if (notes[i].size > 0) {
+        const small = document.createElement("div");
+        small.style.fontSize = "9px";
+        small.style.lineHeight = "1.1";
+        small.style.opacity = "0.8";
+        small.style.display = "grid";
+        small.style.gridTemplateColumns = "repeat(3, 1fr)";
+        small.style.width = "90%";
+        small.style.height = "90%";
+        for (let n = 1; n <= 9; n++) {
+          const span = document.createElement("span");
+          span.style.fontSize = "8px";
+          span.style.opacity = notes[i].has(n) ? "1" : "0.25";
+          span.textContent = notes[i].has(n) ? n : " ";
+          small.appendChild(span);
+        }
+        inner.appendChild(small);
+      } else {
+        inner.textContent = "";
+      }
+
+      // highlight selected / related
+      if (i === selectedIndex) {
+        cell.classList.add("selected");
+      } else if (selectedIndex !== null) {
+        const { row: sr, col: sc } = indexToRC(selectedIndex);
+        if (row === sr || col === sc || (Math.floor(row / 3) === Math.floor(sr / 3) && Math.floor(col / 3) === Math.floor(sc / 3))) {
+          cell.classList.add("related");
+        }
+      }
+
+      if (selectedVal && board[i] === selectedVal && i !== selectedIndex) {
+        cell.classList.add("same-value");
+      }
+
+      if (conflicts.has(i)) {
+        cell.classList.add("conflict");
+      }
+
+      cell.addEventListener("click", () => handleCellTap(i));
+      cell.appendChild(inner);
+      gridEl.appendChild(cell);
+    }
+  }
+
+  // Event wiring
+  difficultyEl.addEventListener("change", () => {
+    currentDifficulty = difficultyEl.value;
+  });
+
+  newGameBtn.addEventListener("click", () => {
+    loadRandomPuzzle(currentDifficulty);
+  });
+
+  document.querySelectorAll(".pad-btn[data-num]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const num = parseInt(btn.dataset.num, 10);
+      handleNumberTap(num);
+    });
+  });
+
+  eraseBtn.addEventListener("click", handleErase);
+  notesBtn.addEventListener("click", toggleNotesMode);
+  clearNotesBtn.addEventListener("click", clearNotes);
+  checkBtn.addEventListener("click", handleCheck);
+  hintBtn.addEventListener("click", handleHint);
+
+  // Init
+  if (!loadState()) {
+    loadRandomPuzzle(currentDifficulty);
+  } else {
+    render();
+  }
+</script>
+</body>
+</html>

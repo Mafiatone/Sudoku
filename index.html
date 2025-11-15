@@ -681,11 +681,13 @@
 
     <div class="controls-row">
       <div class="select-wrap">
-        <select id="difficulty">
-          <option value="easy" selected>Easy</option>
-          <option value="medium">Medium</option>
-          <option value="hard">Hard</option>
-        </select>
+<select id="difficulty">
+  <option value="easy" selected>Easy</option>
+  <option value="medium">Medium</option>
+  <option value="hard">Hard</option>
+  <option value="test">Test (1 cell)</option>
+</select>
+
       </div>
       <div class="select-wrap">
         <select id="themeSelect">
@@ -810,6 +812,11 @@
       "000003400150000200000020073000400000040038001008060300000002040039070028200051000",
       "039000000070002904000000010000400090008001700014503800020010000005600000800004167"
     ]
+      // Test mode: only ONE empty cell to fill
+  test: [
+    // full valid solution with last cell blank
+    "534678912672195348198342567859761423426853791713924856961537284287419635345286170"
+  ]
   };
 
   // Game state
@@ -1323,12 +1330,9 @@
   /* COMPLETION ANIMATION */
 
  function celebrateWin() {
-  // First: render final board before animating
-  render();
-
   const cells = Array.from(gridEl.children);
 
-  // group into 3×3 boxes
+  // Group cells into 3×3 boxes (0–8)
   const boxes = Array.from({ length: 9 }, () => []);
   cells.forEach((cell, index) => {
     const row = Math.floor(index / 9);
@@ -1337,30 +1341,20 @@
     boxes[boxIndex].push(cell);
   });
 
-  // Wait 1 animation frame so DOM is ready
+  // Wait a frame so the final render is committed
   requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-
-      boxes.forEach((boxCells, boxIndex) => {
-        setTimeout(() => {
-          boxCells.forEach(cell => {
-            cell.classList.add("flash-wave");
-
-            // Remove class AFTER animation finishes
-            setTimeout(() => {
-              cell.classList.remove("flash-wave");
-            }, 700);
-          });
-        }, boxIndex * 160);  // wave timing
-      });
-
+    boxes.forEach((boxCells, boxIndex) => {
+      setTimeout(() => {
+        boxCells.forEach(cell => {
+          cell.classList.add("flash-wave");
+          setTimeout(() => {
+            cell.classList.remove("flash-wave");
+          }, 700); // slightly longer than animation duration
+        });
+      }, boxIndex * 160); // wave from box 0 to 8
     });
   });
 }
-
-
-
-
   /* INPUT HANDLERS */
 
   function handleCellTap(index, cellEl) {
@@ -1418,15 +1412,27 @@
     notes[idx].clear();
     clearDigitFromPeers(idx, num);
 
-    if (isSolvedCompletely()) {
-      const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      recordCompletion(currentDifficulty, elapsed, gameUsedHint, gameMadeError);
-      statusText.textContent = "Completed 🎉";
-      if (timerInterval) clearInterval(timerInterval);
-      celebrateWin();
-    } else {
-      statusText.textContent = "In progress";
-    }
+   if (isSolvedCompletely()) {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    recordCompletion(currentDifficulty, elapsed, gameUsedHint, gameMadeError);
+    statusText.textContent = "Completed 🎉";
+    if (timerInterval) clearInterval(timerInterval);
+
+    // final draw BEFORE animation
+    hidePopupPad();
+    saveState();
+    render();
+
+    celebrateWin();
+    return; // important: don't re-render again below
+  } else {
+    statusText.textContent = "In progress";
+  }
+
+  hidePopupPad();
+  saveState();
+  render();
+
 
     hidePopupPad();
     saveState();

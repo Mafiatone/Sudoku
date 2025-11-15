@@ -412,24 +412,27 @@
   0% {
     transform: scale(1);
     box-shadow: none;
-    background: var(--cell-bg);
   }
   25% {
     transform: scale(1.08);
-    box-shadow: 0 0 22px rgba(250, 204, 21, 1);
-    background: radial-gradient(circle, var(--accent) 0%, #0f172a 75%);
+    box-shadow: 0 0 22px var(--accent);
+    background: radial-gradient(circle, var(--accent) 0%, #0f172a 70%);
     color: #0b1120;
   }
   55% {
-    transform: scale(0.97);
-    box-shadow: 0 0 8px rgba(15, 23, 42, 0.9);
+    transform: scale(0.96);
+    box-shadow: 0 0 6px rgba(15,23,42,0.7);
   }
   100% {
     transform: scale(1);
     box-shadow: none;
-    background: var(--cell-bg);
   }
 }
+
+.cell.flash-wave {
+  animation: flashWave 600ms ease-out both;
+}
+
 
 .cell.flash-wave {
   animation: flashWave 600ms ease-in-out forwards;
@@ -1320,14 +1323,13 @@
   /* COMPLETION ANIMATION */
 
  function celebrateWin() {
-  // Make sure we’re animating the final board state
+  // First: render final board before animating
   render();
 
   const cells = Array.from(gridEl.children);
 
-  // Group cells by 3×3 box index 0–8
+  // group into 3×3 boxes
   const boxes = Array.from({ length: 9 }, () => []);
-
   cells.forEach((cell, index) => {
     const row = Math.floor(index / 9);
     const col = index % 9;
@@ -1335,18 +1337,27 @@
     boxes[boxIndex].push(cell);
   });
 
-  // Flash each 3×3 box in sequence
-  boxes.forEach((boxCells, boxIndex) => {
-    setTimeout(() => {
-      boxCells.forEach(cell => {
-        cell.classList.add("flash-wave");
+  // Wait 1 animation frame so DOM is ready
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+
+      boxes.forEach((boxCells, boxIndex) => {
         setTimeout(() => {
-          cell.classList.remove("flash-wave");
-        }, 650); // slightly longer than animation duration
+          boxCells.forEach(cell => {
+            cell.classList.add("flash-wave");
+
+            // Remove class AFTER animation finishes
+            setTimeout(() => {
+              cell.classList.remove("flash-wave");
+            }, 700);
+          });
+        }, boxIndex * 160);  // wave timing
       });
-    }, boxIndex * 160); // delay between boxes
+
+    });
   });
 }
+
 
 
 

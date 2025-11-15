@@ -906,13 +906,16 @@
     }
   }
 
-  function isSolvedCompletely() {
-    for (let i = 0; i < 81; i++) {
-      if (board[i] === 0) return false;
-    }
-    const conflicts = findRuleConflicts();
-    return conflicts.size === 0 && (!solution || board.every((v, i) => v === solution[i]));
+function isSolvedCompletely() {
+  // With strict "no mistakes" mode, solved means:
+  // every cell matches the solution
+  if (!solution) return false;
+  for (let i = 0; i < 81; i++) {
+    if (board[i] !== solution[i]) return false;
   }
+  return true;
+}
+
 
   /* POPUP PAD */
 
@@ -949,56 +952,60 @@
     }
   }
 
-  function handleNumberTap(num) {
-    if (selectedIndex === null) return;
-    if (given[selectedIndex]) return;
+ function handleNumberTap(num) {
+  if (selectedIndex === null) return;
+  if (given[selectedIndex]) return;
 
-    const idx = selectedIndex;
+  const idx = selectedIndex;
 
-    if (notesMode) {
-      // NOTES MODE – pencil marks only
-      const set = notes[idx];
-      if (set.has(num)) set.delete(num);
-      else set.add(num);
-      board[idx] = 0;
-      statusText.textContent = "Notes updated";
-      hidePopupPad();
-      saveState();
-      render();
-      return;
-    }
-
-    // NORMAL MODE – block illegal moves instantly
-    const previous = board[idx];
-    board[idx] = num;
-
-    if (!isValidPlacement(idx, num)) {
-      board[idx] = previous;
-      statusText.textContent = "That breaks row / column / box.";
-      const conflicts = findRuleConflicts();
-      render(conflicts);
-      return;
-    }
-
-    // Optional: solution-aware "no mistakes" mode.
-    // Right now we just allow any rule-valid move.
-    // If later you want strict solution checking, we can add:
-    // if (solution && solution[idx] !== num) { ... }
-
-    notes[idx].clear();
-    clearDigitFromPeers(idx, num);
-
-    if (isSolvedCompletely()) {
-      statusText.textContent = "Completed 🎉";
-      if (timerInterval) clearInterval(timerInterval);
-    } else {
-      statusText.textContent = "In progress";
-    }
-
+  // NOTES MODE – pencil marks only
+  if (notesMode) {
+    const set = notes[idx];
+    if (set.has(num)) set.delete(num);
+    else set.add(num);
+    board[idx] = 0;
+    statusText.textContent = "Notes updated";
     hidePopupPad();
     saveState();
     render();
+    return;
   }
+
+  // NORMAL MODE – always place the number first
+  board[idx] = num;
+
+  // 1) Check row/column/box conflicts
+  const conflicts = findRuleConflicts();
+
+  // 2) Check against the true solution (strict "no mistakes" mode)
+  if (solution && board[idx] !== solution[idx]) {
+    conflicts.add(idx);
+  }
+
+  if (conflicts.size > 0) {
+    // ❌ Wrong move: keep the number, show it in red
+    statusText.textContent = "That number can't go there.";
+    hidePopupPad();
+    saveState();
+    render(conflicts);   // cell stays filled but highlighted as error
+    return;
+  }
+
+  // ✅ Move is valid: clear notes in this cell and peers
+  notes[idx].clear();
+  clearDigitFromPeers(idx, num);
+
+  if (isSolvedCompletely()) {
+    statusText.textContent = "Completed 🎉";
+    if (timerInterval) clearInterval(timerInterval);
+  } else {
+    statusText.textContent = "In progress";
+  }
+
+  hidePopupPad();
+  saveState();
+  render();
+}
 
   function handleErase() {
     if (selectedIndex === null) return;

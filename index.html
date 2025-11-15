@@ -196,9 +196,7 @@
       flex-wrap: wrap;
     }
 
-    select, button {
-      font: inherit;
-    }
+    select, button { font: inherit; }
 
     .select-wrap {
       flex: 1;
@@ -402,6 +400,17 @@
       filter: brightness(1.08);
     }
 
+    /* Completion twinkle */
+    @keyframes twinkle {
+      0%   { transform: scale(1);   box-shadow: 0 0 0 rgba(0,0,0,0); }
+      40%  { transform: scale(1.04); box-shadow: 0 0 14px var(--accent); }
+      100% { transform: scale(1);   box-shadow: 0 0 0 rgba(0,0,0,0); }
+    }
+
+    .cell.twinkle {
+      animation: twinkle 0.7s ease-in-out forwards;
+    }
+
     /* POPUP PAD */
 
     .popup-pad {
@@ -434,9 +443,7 @@
       font-weight: 600;
     }
 
-    .popup-btn:active {
-      transform: translateY(1px);
-    }
+    .popup-btn:active { transform: translateY(1px); }
 
     /* PAD */
 
@@ -492,9 +499,7 @@
       pointer-events: none;
     }
 
-    .pad-btn:active {
-      transform: translateY(1px);
-    }
+    .pad-btn:active { transform: translateY(1px); }
 
     .footer {
       margin-top: 10px;
@@ -523,9 +528,7 @@
       cursor: pointer;
     }
 
-    .stats-btn:active {
-      transform: translateY(1px);
-    }
+    .stats-btn:active { transform: translateY(1px); }
 
     /* STATS OVERLAY */
 
@@ -558,7 +561,7 @@
     .stats-sub {
       font-size: 11px;
       color: var(--muted);
-      margin-bottom: 10px;
+      margin-bottom: 6px;
     }
 
     .stats-table {
@@ -591,6 +594,7 @@
       justify-content: space-between;
       align-items: center;
       margin-top: 4px;
+      gap: 6px;
     }
 
     .stats-close {
@@ -604,18 +608,18 @@
 
     .hidden { display: none !important; }
 
-    @media (max-width: 360px) {
-      .card { padding: 12px 10px 14px; }
-      .cell { font-size: 16px; }
-      .pad-btn { padding: 8px 0; }
-      .popup-btn { width: 28px; height: 28px; font-size: 13px; }
-    }
-
     /* Make conflicts extra obvious in Neon Pink */
     body.theme-neonpink .cell.conflict {
       background: rgba(250, 204, 21, 0.3);
       color: #fef9c3;
       box-shadow: 0 0 14px rgba(250, 204, 21, 0.95);
+    }
+
+    @media (max-width: 360px) {
+      .card { padding: 12px 10px 14px; }
+      .cell { font-size: 16px; }
+      .pad-btn { padding: 8px 0; }
+      .popup-btn { width: 28px; height: 28px; font-size: 13px; }
     }
   </style>
 </head>
@@ -707,6 +711,7 @@
       <div class="stats-sub">
         Tracked per difficulty on this device only.
       </div>
+      <div id="statsBadges" class="stats-sub"></div>
       <table class="stats-table">
         <thead>
           <tr>
@@ -729,7 +734,6 @@
 
 <script>
   // Multiple puzzles per difficulty (random pick each time)
-  // Each string is 81 chars, 0 = empty.
   const PUZZLES = {
     easy: [
       "791020506350006090268951034430065000806070340900013000000007200000542079570000003",
@@ -764,11 +768,23 @@
   let currentPuzzleStr = null;
   let solution = null;
 
-  // Stats state
+  // Per-game flags for badges
+  let gameUsedHint = false;
+  let gameMadeError = false;
+
+  // Stats state (per difficulty + meta)
   let stats = {
     easy:   { games: 0, totalSeconds: 0, bestSeconds: null, worstSeconds: null },
     medium: { games: 0, totalSeconds: 0, bestSeconds: null, worstSeconds: null },
-    hard:   { games: 0, totalSeconds: 0, bestSeconds: null, worstSeconds: null }
+    hard:   { games: 0, totalSeconds: 0, bestSeconds: null, worstSeconds: null },
+    meta: {
+      currentStreak: 0,
+      longestStreak: 0,
+      lastPlayedDate: null,
+      noHintWins: 0,
+      noErrorWins: 0,
+      perfectWins: 0
+    }
   };
 
   const gridEl = document.getElementById("grid");
@@ -787,6 +803,7 @@
   const statsOverlay = document.getElementById("statsOverlay");
   const statsBody = document.getElementById("statsBody");
   const statsSummary = document.getElementById("statsSummary");
+  const statsBadges = document.getElementById("statsBadges");
   const statsBtn = document.getElementById("statsBtn");
   const closeStatsBtn = document.getElementById("closeStatsBtn");
 
@@ -887,9 +904,7 @@
       const idx = findEmpty();
       if (idx === -1) return true;
 
-      const nums = [1,2,3,4,5,6,7,8,9];
-      for (let k = 0; k < nums.length; k++) {
-        const num = nums[k];
+      for (let num = 1; num <= 9; num++) {
         if (isValidValue(b, idx, num)) {
           b[idx] = num;
           if (backtrack()) return true;
@@ -930,9 +945,19 @@
       const raw = localStorage.getItem("sudokuStatsV1");
       if (!raw) return;
       const parsed = JSON.parse(raw);
-      if (parsed.easy && parsed.medium && parsed.hard) {
-        stats = parsed;
+      if (!parsed.easy || !parsed.medium || !parsed.hard) return;
+
+      if (!parsed.meta) {
+        parsed.meta = {
+          currentStreak: 0,
+          longestStreak: 0,
+          lastPlayedDate: null,
+          noHintWins: 0,
+          noErrorWins: 0,
+          perfectWins: 0
+        };
       }
+      stats = parsed;
     } catch (e) {}
   }
 
@@ -942,13 +967,47 @@
     } catch (e) {}
   }
 
-  function recordCompletion(diff, seconds) {
+  function recordCompletion(diff, seconds, usedHint, madeError) {
     const s = stats[diff];
     if (!s) return;
     s.games++;
     s.totalSeconds += seconds;
     if (s.bestSeconds === null || seconds < s.bestSeconds) s.bestSeconds = seconds;
     if (s.worstSeconds === null || seconds > s.worstSeconds) s.worstSeconds = seconds;
+
+    const meta = stats.meta || (stats.meta = {
+      currentStreak: 0,
+      longestStreak: 0,
+      lastPlayedDate: null,
+      noHintWins: 0,
+      noErrorWins: 0,
+      perfectWins: 0
+    });
+
+    const today = new Date();
+    const todayStr = today.toISOString().slice(0, 10);
+
+    if (!meta.lastPlayedDate) {
+      meta.currentStreak = 1;
+    } else {
+      const last = new Date(meta.lastPlayedDate);
+      const diffMs = today.setHours(0,0,0,0) - last.setHours(0,0,0,0);
+      const diffDays = Math.floor(diffMs / 86400000);
+      if (diffDays === 0) {
+        // same day; streak unchanged
+      } else if (diffDays === 1) {
+        meta.currentStreak = (meta.currentStreak || 0) + 1;
+      } else {
+        meta.currentStreak = 1;
+      }
+    }
+    meta.longestStreak = Math.max(meta.longestStreak || 0, meta.currentStreak);
+    meta.lastPlayedDate = todayStr;
+
+    if (!usedHint) meta.noHintWins = (meta.noHintWins || 0) + 1;
+    if (!madeError) meta.noErrorWins = (meta.noErrorWins || 0) + 1;
+    if (!usedHint && !madeError) meta.perfectWins = (meta.perfectWins || 0) + 1;
+
     saveStats();
   }
 
@@ -981,7 +1040,18 @@
       statsBody.appendChild(tr);
     });
 
-    statsSummary.textContent = `Total games: ${totalGames}`;
+    const meta = stats.meta || {};
+    const currentStreak = meta.currentStreak || 0;
+    const longestStreak = meta.longestStreak || 0;
+    const noHintWins = meta.noHintWins || 0;
+    const noErrorWins = meta.noErrorWins || 0;
+    const perfectWins = meta.perfectWins || 0;
+
+    statsSummary.textContent =
+      `Total games: ${totalGames} • Streak: ${currentStreak} day(s) (Best: ${longestStreak})`;
+
+    statsBadges.textContent =
+      `Badges – No Hints: ${noHintWins} • No Errors: ${noErrorWins} • Perfect: ${perfectWins}`;
   }
 
   statsBtn.addEventListener("click", () => {
@@ -1008,7 +1078,9 @@
         difficulty: currentDifficulty,
         theme: currentTheme,
         puzzle: currentPuzzleStr,
-        startTime
+        startTime,
+        gameUsedHint,
+        gameMadeError
       };
       localStorage.setItem("sudokuStateMain", JSON.stringify(state));
     } catch (e) {}
@@ -1037,6 +1109,9 @@
         timerInterval = setInterval(updateTimer, 1000);
         updateTimer();
       }
+
+      gameUsedHint = !!state.gameUsedHint;
+      gameMadeError = !!state.gameMadeError;
 
       statusText.textContent = "Resumed game";
       return true;
@@ -1068,6 +1143,8 @@
     hidePopupPad();
     startTimer();
     statusText.textContent = "In progress";
+    gameUsedHint = false;
+    gameMadeError = false;
     saveState();
     render();
   }
@@ -1186,6 +1263,20 @@
     }
   });
 
+  /* COMPLETION ANIMATION */
+
+  function celebrateWin() {
+    const cells = Array.from(gridEl.children);
+    cells.forEach((cell, index) => {
+      setTimeout(() => {
+        cell.classList.add("twinkle");
+        setTimeout(() => {
+          cell.classList.remove("twinkle");
+        }, 700);
+      }, index * 20);
+    });
+  }
+
   /* INPUT HANDLERS */
 
   function handleCellTap(index, cellEl) {
@@ -1231,6 +1322,7 @@
 
     if (conflicts.size > 0) {
       // Wrong move: keep the number, show in red
+      gameMadeError = true;
       statusText.textContent = "That number can't go there.";
       hidePopupPad();
       saveState();
@@ -1244,9 +1336,10 @@
 
     if (isSolvedCompletely()) {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      recordCompletion(currentDifficulty, elapsed);
+      recordCompletion(currentDifficulty, elapsed, gameUsedHint, gameMadeError);
       statusText.textContent = "Completed 🎉";
       if (timerInterval) clearInterval(timerInterval);
+      celebrateWin();
     } else {
       statusText.textContent = "In progress";
     }
@@ -1295,13 +1388,17 @@
     board[selectedIndex] = solution[selectedIndex];
     notes[selectedIndex].clear();
     clearDigitFromPeers(selectedIndex, board[selectedIndex]);
+    gameUsedHint = true;
     statusText.textContent = "Hint applied 💡";
+
     if (isSolvedCompletely()) {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      recordCompletion(currentDifficulty, elapsed);
+      recordCompletion(currentDifficulty, elapsed, gameUsedHint, gameMadeError);
       statusText.textContent = "Completed 🎉";
       if (timerInterval) clearInterval(timerInterval);
+      celebrateWin();
     }
+
     saveState();
     render();
   }

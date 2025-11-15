@@ -406,12 +406,30 @@
       filter: brightness(1.08);
     }
 
-    /* Completion twinkle */
-    @keyframes twinkle {
-      0%   { transform: scale(1);   box-shadow: 0 0 0 rgba(0,0,0,0); }
-      40%  { transform: scale(1.04); box-shadow: 0 0 14px var(--accent); }
-      100% { transform: scale(1);   box-shadow: 0 0 0 rgba(0,0,0,0); }
-    }
+    /* Completion flash wave */
+@keyframes flashWave {
+  0% {
+    transform: scale(1);
+    box-shadow: none;
+  }
+  30% {
+    transform: scale(1.06);
+    box-shadow: 0 0 18px rgba(250, 204, 21, 0.95);
+  }
+  60% {
+    transform: scale(0.98);
+    box-shadow: 0 0 6px rgba(15, 23, 42, 0.6);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: none;
+  }
+}
+
+.cell.flash-wave {
+  animation: flashWave 550ms ease-in-out forwards;
+}
+
 
     .cell.twinkle {
       animation: twinkle 0.7s ease-in-out forwards;
@@ -1292,16 +1310,31 @@
   /* COMPLETION ANIMATION */
 
   function celebrateWin() {
-    const cells = Array.from(gridEl.children);
-    cells.forEach((cell, index) => {
-      setTimeout(() => {
-        cell.classList.add("twinkle");
+  const cells = Array.from(gridEl.children);
+
+  // group cells by 3×3 box
+  const boxes = Array.from({ length: 9 }, () => []);
+
+  cells.forEach((cell, index) => {
+    const row = Math.floor(index / 9);
+    const col = index % 9;
+    const boxIndex = Math.floor(row / 3) * 3 + Math.floor(col / 3);
+    boxes[boxIndex].push(cell);
+  });
+
+  // flash boxes one after another
+  boxes.forEach((boxCells, boxIndex) => {
+    setTimeout(() => {
+      boxCells.forEach(cell => {
+        cell.classList.add("flash-wave");
         setTimeout(() => {
-          cell.classList.remove("twinkle");
-        }, 700);
-      }, index * 20);
-    });
-  }
+          cell.classList.remove("flash-wave");
+        }, 600);
+      });
+    }, boxIndex * 140); // delay between boxes
+  });
+}
+
 
   /* INPUT HANDLERS */
 

@@ -188,6 +188,12 @@
       color: var(--muted);
     }
 
+    #versionTag {
+      font-size: 11px;
+      color: var(--muted);
+      margin-left: 4px;
+    }
+
     .controls-row {
       display: flex;
       gap: 8px;
@@ -509,7 +515,7 @@
     }
 
     .footer b {
-      color: --accent;
+      color: var(--accent);
       font-weight: 600;
     }
 
@@ -554,14 +560,20 @@
     }
 
     .stats-card h2 {
-      margin: 0 0 8px;
+      margin: 0 0 4px;
       font-size: 16px;
+    }
+
+    #statsVersion {
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 4px;
     }
 
     .stats-sub {
       font-size: 11px;
       color: var(--muted);
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     .stats-table {
@@ -629,7 +641,10 @@
     <div class="header-row">
       <div class="title-group">
         <h1>Sudoku</h1>
-        <div class="subtitle">Ad-free. Just numbers and logic.</div>
+        <div class="subtitle">
+          Ad-free. Just numbers and logic.
+          <span id="versionTag"></span>
+        </div>
       </div>
     </div>
 
@@ -708,6 +723,7 @@
   <div id="statsOverlay" class="stats-overlay hidden">
     <div class="stats-card">
       <h2>Stats</h2>
+      <div id="statsVersion"></div>
       <div class="stats-sub">
         Tracked per difficulty on this device only.
       </div>
@@ -733,6 +749,16 @@
 </div>
 
 <script>
+  const APP_VERSION = "v0.4";
+
+  const STATS_KEY = "sudokuStatsV2";
+  const STATE_KEY = "sudokuStateV2";
+  const THEME_KEY = "sudokuThemeV1";
+
+  // show version tags
+  document.getElementById("versionTag").textContent = "· " + APP_VERSION;
+  document.getElementById("statsVersion").textContent = "Version " + APP_VERSION;
+
   // Multiple puzzles per difficulty (random pick each time)
   const PUZZLES = {
     easy: [
@@ -816,7 +842,7 @@
   }
 
   function loadTheme() {
-    const saved = localStorage.getItem("sudokuThemeV1");
+    const saved = localStorage.getItem(THEME_KEY);
     if (saved) {
       currentTheme = saved;
       applyTheme(saved);
@@ -828,7 +854,7 @@
   }
 
   function saveTheme() {
-    localStorage.setItem("sudokuThemeV1", currentTheme);
+    localStorage.setItem(THEME_KEY, currentTheme);
   }
 
   themeSelect.addEventListener("change", () => {
@@ -942,7 +968,7 @@
 
   function loadStats() {
     try {
-      const raw = localStorage.getItem("sudokuStatsV1");
+      const raw = localStorage.getItem(STATS_KEY);
       if (!raw) return;
       const parsed = JSON.parse(raw);
       if (!parsed.easy || !parsed.medium || !parsed.hard) return;
@@ -963,7 +989,7 @@
 
   function saveStats() {
     try {
-      localStorage.setItem("sudokuStatsV1", JSON.stringify(stats));
+      localStorage.setItem(STATS_KEY, JSON.stringify(stats));
     } catch (e) {}
   }
 
@@ -1082,13 +1108,13 @@
         gameUsedHint,
         gameMadeError
       };
-      localStorage.setItem("sudokuStateMain", JSON.stringify(state));
+      localStorage.setItem(STATE_KEY, JSON.stringify(state));
     } catch (e) {}
   }
 
   function loadState() {
     try {
-      const raw = localStorage.getItem("sudokuStateMain");
+      const raw = localStorage.getItem(STATE_KEY);
       if (!raw) return false;
       const state = JSON.parse(raw);
       board = state.board || board;

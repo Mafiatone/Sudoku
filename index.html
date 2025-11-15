@@ -686,6 +686,7 @@
       <button class="pad-btn small" id="notesBtn">Notes</button>
       <button class="pad-btn small" id="clearNotesBtn">Clr Notes</button>
       <button class="pad-btn small" id="checkBtn">Check</button>
+      <button class="pad-btn small" id="undoBtn">Undo</button>
       <button class="pad-btn small primary" id="hintBtn">Hint</button>
     </div>
 
@@ -751,7 +752,6 @@
 </div>
 
 <script>
-  // Simple puzzles (0 = empty)
   const PUZZLES = {
     easy: [
       "530070000600195000098000060800060003400803001700020006060000280000419005000080079"
@@ -777,16 +777,22 @@
   let solution = null;
 
   // timer
-  let elapsedSeconds = 0;      // persisted
-  let startTime = null;        // Date.now() when running
+  let elapsedSeconds = 0;
+  let startTime = null;
   let timerInterval = null;
   let gameFinished = false;
 
-  // per-game stats
+  // errors / hints
   let currentErrors = 0;
   let currentHints = 0;
 
-  // Global stats structure
+  // persistent error highlights
+  let errorMarks = new Set();
+
+  // undo history
+  let history = [];
+
+  // stats
   let stats = {
     easy:   { games: 0, best: null, totalTime: 0, worst: null },
     medium: { games: 0, best: null, totalTime: 0, worst: null },
@@ -809,6 +815,7 @@
   const clearNotesBtn = document.getElementById("clearNotesBtn");
   const checkBtn = document.getElementById("checkBtn");
   const hintBtn = document.getElementById("hintBtn");
+  const undoBtn = document.getElementById("undoBtn");
   const popupPad = document.getElementById("popupPad");
   const padButtons = document.querySelectorAll(".pad-btn[data-num]");
   const statsLink = document.getElementById("statsLink");
@@ -857,6 +864,10 @@
 
   function cloneBoard(b) {
     return b.slice();
+  }
+
+  function cloneNotesStruct(n) {
+    return n.map(set => new Set(Array.from(set)));
   }
 
   function formatTime(seconds) {
@@ -965,6 +976,51 @@
     return total;
   }
 
+  /* HISTORY / UNDO */
+
+  function pushHistory() {
+    if (gameFinished) return; // no history once finished
+    const running = startTime != null;
+    const snapshot = {
+      board: board.slice(),
+      notes: cloneNotesStruct(notes),
+      selectedIndex,
+      elapsedSeconds: currentElapsedSeconds(),
+      running,
+      currentErrors,
+      currentHints,
+      errorMarks: Array.from(errorMarks)
+    };
+    history.push(snapshot);
+    if (history.length > 100) history.shift();
+  }
+
+  function handleUndo() {
+    if (history.length === 0) return;
+    if (gameFinished) return;
+
+    const snap = history.pop();
+    board = snap.board.slice();
+    notes = snap.notes.map(s => new Set(Array.from(s)));
+    selectedIndex = snap.selectedIndex;
+    elapsedSeconds = snap.elapsedSeconds;
+    currentErrors = snap.currentErrors;
+    currentHints = snap.currentHints;
+    errorMarks = new Set(snap.errorMarks || []);
+
+    if (timerInterval) clearInterval(timerInterval);
+    if (snap.running) {
+      startTime = Date.now();
+      timerInterval = setInterval(updateTimer, 1000);
+    } else {
+      startTime = null;
+    }
+    updateTimer();
+    statusText.textContent = "Undo";
+    saveState();
+    render();
+  }
+
   /* STATS LOAD/SAVE */
 
   function loadStats() {
@@ -982,6 +1038,10 @@
     } catch (e) {}
   }
 
+  function formatStatsTime(seconds, games) {
+    return games ? formatTime(Math.round(seconds / games)) : "–";
+  }
+
   function updateStatsUI() {
     const easy = stats.easy;
     const med  = stats.medium;
@@ -989,20 +1049,17 @@
 
     document.getElementById("easyGames").textContent = easy.games;
     document.getElementById("easyBest").textContent  = formatTime(easy.best);
-    document.getElementById("easyAvg").textContent   =
-      easy.games ? formatTime(Math.round(easy.totalTime / easy.games)) : "–";
+    document.getElementById("easyAvg").textContent   = formatStatsTime(easy.totalTime, easy.games);
     document.getElementById("easyWorst").textContent = formatTime(easy.worst);
 
     document.getElementById("medGames").textContent = med.games;
     document.getElementById("medBest").textContent  = formatTime(med.best);
-    document.getElementById("medAvg").textContent   =
-      med.games ? formatTime(Math.round(med.totalTime / med.games)) : "–";
+    document.getElementById("medAvg").textContent   = formatStatsTime(med.totalTime, med.games);
     document.getElementById("medWorst").textContent = formatTime(med.worst);
 
     document.getElementById("hardGames").textContent = hard.games;
     document.getElementById("hardBest").textContent  = formatTime(hard.best);
-    document.getElementById("hardAvg").textContent   =
-      hard.games ? formatTime(Math.round(hard.totalTime / hard.games)) : "–";
+    document.getElementById("hardAvg").textContent   = formatStatsTime(hard.totalTime, hard.games);
     document.getElementById("hardWorst").textContent = formatTime(hard.worst);
 
     const badges = stats.badges;
@@ -1095,7 +1152,13 @@ Badges – No Hints: ${badges.noHints} · No Errors: ${badges.noErrors} · Perfe
         solution = solveSudoku(base);
       }
 
-      if (state.running && !gameFinished) {
+      history = [];
+      errorMarks = new Set();
+      currentErrors = 0;
+      currentHints = 0;
+      gameFinished = false;
+
+      if (state.running) {
         startTime = Date.now();
         if (timerInterval) clearInterval(timerInterval);
         timerInterval = setInterval(updateTimer, 1000);
@@ -1135,6 +1198,8 @@ Badges – No Hints: ${badges.noHints} · No Errors: ${badges.noErrors} · Perfe
     currentErrors = 0;
     currentHints = 0;
     gameFinished = false;
+    errorMarks = new Set();
+    history = [];
     statusText.textContent = "In progress";
     hidePopupPad();
     saveState();
@@ -1276,10 +1341,12 @@ Badges – No Hints: ${badges.noHints} · No Errors: ${badges.noErrors} · Perfe
     const idx = selectedIndex;
 
     if (notesMode) {
+      pushHistory();
       const set = notes[idx];
       if (set.has(num)) set.delete(num);
       else set.add(num);
       board[idx] = 0;
+      errorMarks.delete(idx);
       statusText.textContent = "Notes updated";
       hidePopupPad();
       saveState();
@@ -1287,20 +1354,21 @@ Badges – No Hints: ${badges.noHints} · No Errors: ${badges.noErrors} · Perfe
       return;
     }
 
-    const previous = board[idx];
-    board[idx] = num;
-
+    // check legality without changing board
     if (!isValidPlacement(idx, num)) {
-      board[idx] = previous;
       currentErrors += 1;
       statusText.textContent = "That breaks row / column / box.";
+      errorMarks.add(idx);
       const conflicts = findRuleConflicts();
       render(conflicts);
       return;
     }
 
+    pushHistory();
+    board[idx] = num;
     notes[idx].clear();
     clearDigitFromPeers(idx, num);
+    errorMarks.delete(idx);
 
     if (isSolvedCompletely()) {
       gameFinished = true;
@@ -1320,8 +1388,10 @@ Badges – No Hints: ${badges.noHints} · No Errors: ${badges.noErrors} · Perfe
     if (selectedIndex === null) return;
     if (given[selectedIndex]) return;
     if (gameFinished) return;
+    pushHistory();
     board[selectedIndex] = 0;
     notes[selectedIndex].clear();
+    errorMarks.delete(selectedIndex);
     statusText.textContent = "In progress";
     hidePopupPad();
     saveState();
@@ -1347,6 +1417,8 @@ Badges – No Hints: ${badges.noHints} · No Errors: ${badges.noErrors} · Perfe
       statusText.textContent = `${allConflicts.size} issue(s) found ❗`;
       currentErrors += 1;
     }
+
+    errorMarks = new Set(allConflicts);
     render(allConflicts);
   }
 
@@ -1356,10 +1428,12 @@ Badges – No Hints: ${badges.noHints} · No Errors: ${badges.noErrors} · Perfe
     if (gameFinished) return;
 
     if (solution) {
+      pushHistory();
       const val = solution[selectedIndex];
       board[selectedIndex] = val;
       notes[selectedIndex].clear();
       clearDigitFromPeers(selectedIndex, val);
+      errorMarks.delete(selectedIndex);
       currentHints += 1;
       statusText.textContent = "Hint applied 💡";
       if (isSolvedCompletely()) {
@@ -1383,7 +1457,11 @@ Badges – No Hints: ${badges.noHints} · No Errors: ${badges.noErrors} · Perfe
 
   function clearNotes() {
     if (selectedIndex === null) return;
+    if (gameFinished) return;
+    if (notes[selectedIndex].size === 0) return;
+    pushHistory();
     notes[selectedIndex].clear();
+    errorMarks.delete(selectedIndex);
     saveState();
     render();
   }
@@ -1408,7 +1486,10 @@ Badges – No Hints: ${badges.noHints} · No Errors: ${badges.noErrors} · Perfe
 
   function render(conflictsOverride) {
     gridEl.innerHTML = "";
-    const conflicts = conflictsOverride || findRuleConflicts();
+    const baseConflicts = conflictsOverride || findRuleConflicts();
+    const conflicts = new Set(baseConflicts);
+    errorMarks.forEach(i => conflicts.add(i));
+
     const selectedVal = selectedIndex !== null ? board[selectedIndex] : null;
 
     for (let i = 0; i < 81; i++) {
@@ -1507,6 +1588,7 @@ Badges – No Hints: ${badges.noHints} · No Errors: ${badges.noErrors} · Perfe
   clearNotesBtn.addEventListener("click", clearNotes);
   checkBtn.addEventListener("click", handleCheck);
   hintBtn.addEventListener("click", handleHint);
+  undoBtn.addEventListener("click", handleUndo);
 
   statsLink.addEventListener("click", (e) => {
     e.preventDefault();

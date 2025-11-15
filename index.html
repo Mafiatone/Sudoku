@@ -407,24 +407,34 @@
     }
 
     /* Completion flash wave */
+/* Completion flash wave – very obvious */
 @keyframes flashWave {
   0% {
     transform: scale(1);
     box-shadow: none;
+    background: var(--cell-bg);
   }
-  30% {
-    transform: scale(1.06);
-    box-shadow: 0 0 18px rgba(250, 204, 21, 0.95);
+  25% {
+    transform: scale(1.08);
+    box-shadow: 0 0 22px rgba(250, 204, 21, 1);
+    background: radial-gradient(circle, var(--accent) 0%, #0f172a 75%);
+    color: #0b1120;
   }
-  60% {
-    transform: scale(0.98);
-    box-shadow: 0 0 6px rgba(15, 23, 42, 0.6);
+  55% {
+    transform: scale(0.97);
+    box-shadow: 0 0 8px rgba(15, 23, 42, 0.9);
   }
   100% {
     transform: scale(1);
     box-shadow: none;
+    background: var(--cell-bg);
   }
 }
+
+.cell.flash-wave {
+  animation: flashWave 600ms ease-in-out forwards;
+}
+
 
 .cell.flash-wave {
   animation: flashWave 550ms ease-in-out forwards;
@@ -1309,10 +1319,13 @@
 
   /* COMPLETION ANIMATION */
 
-  function celebrateWin() {
+ function celebrateWin() {
+  // Make sure we’re animating the final board state
+  render();
+
   const cells = Array.from(gridEl.children);
 
-  // group cells by 3×3 box
+  // Group cells by 3×3 box index 0–8
   const boxes = Array.from({ length: 9 }, () => []);
 
   cells.forEach((cell, index) => {
@@ -1322,18 +1335,19 @@
     boxes[boxIndex].push(cell);
   });
 
-  // flash boxes one after another
+  // Flash each 3×3 box in sequence
   boxes.forEach((boxCells, boxIndex) => {
     setTimeout(() => {
       boxCells.forEach(cell => {
         cell.classList.add("flash-wave");
         setTimeout(() => {
           cell.classList.remove("flash-wave");
-        }, 600);
+        }, 650); // slightly longer than animation duration
       });
-    }, boxIndex * 140); // delay between boxes
+    }, boxIndex * 160); // delay between boxes
   });
 }
+
 
 
   /* INPUT HANDLERS */

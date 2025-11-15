@@ -7,6 +7,7 @@
   <style>
     :root {
       font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      /* default (dark) */
       --bg: #111827;
       --card: #020617;
       --accent: #fbbf24;
@@ -20,8 +21,100 @@
       --cell-bg: #020617;
       --cell-hover: #111827;
       --cell-selected: #1d4ed8;
-      --cell-related: #1f2937;
+      --cell-related: #111827;
       --cell-highlight: #111827;
+    }
+
+    /* THEME OVERRIDES */
+
+    body.theme-dark {
+      --bg: #111827;
+      --card: #020617;
+      --accent: #fbbf24;
+      --accent-soft: #1e293b;
+      --grid-line: #374151;
+      --grid-sub: #4b5563;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --error: #f87171;
+      --given: #e5e7eb;
+      --cell-bg: #020617;
+      --cell-hover: #111827;
+      --cell-selected: #1d4ed8;
+      --cell-related: #111827;
+      --cell-highlight: #111827;
+    }
+
+    body.theme-contrast {
+      --bg: #020617;
+      --card: #020617;
+      --accent: #f97316;
+      --accent-soft: #111827;
+      --grid-line: #9ca3af;
+      --grid-sub: #e5e7eb;
+      --text: #f9fafb;
+      --muted: #d1d5db;
+      --error: #f97373;
+      --given: #ffffff;
+      --cell-bg: #020617;
+      --cell-hover: #111827;
+      --cell-selected: #22c55e;
+      --cell-related: #030712;
+      --cell-highlight: #111827;
+    }
+
+    body.theme-bright {
+      --bg: #e5e7eb;
+      --card: #f9fafb;
+      --accent: #2563eb;
+      --accent-soft: #e5e7eb;
+      --grid-line: #d1d5db;
+      --grid-sub: #9ca3af;
+      --text: #111827;
+      --muted: #6b7280;
+      --error: #b91c1c;
+      --given: #111827;
+      --cell-bg: #ffffff;
+      --cell-hover: #e5e7eb;
+      --cell-selected: #2563eb;
+      --cell-related: #e5e7eb;
+      --cell-highlight: #e5e7eb;
+    }
+
+    body.theme-neon {
+      --bg: #020617;
+      --card: #020617;
+      --accent: #22c55e;
+      --accent-soft: #0f172a;
+      --grid-line: #22c55e;
+      --grid-sub: #4ade80;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --error: #fb7185;
+      --given: #f9fafb;
+      --cell-bg: #020617;
+      --cell-hover: #0f172a;
+      --cell-selected: #22c55e;
+      --cell-related: #020617;
+      --cell-highlight: #0f172a;
+    }
+
+    body.theme-paper {
+      --bg: #fef9c3;
+      --card: #fffbeb;
+      --accent: #b45309;
+      --accent-soft: #fef3c7;
+      --grid-line: #d97706;
+      --grid-sub: #92400e;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --error: #b91c1c;
+      --given: #1f2937;
+      --cell-bg: #fffbeb;
+      --cell-hover: #fef3c7;
+      --cell-selected: #f59e0b;
+      --cell-related: #fef3c7;
+      --cell-highlight: #fef3c7;
     }
 
     * {
@@ -45,7 +138,7 @@
     }
 
     .card {
-      background: linear-gradient(145deg, #020617, #030712);
+      background: linear-gradient(145deg, var(--card), #030712);
       border-radius: 18px;
       padding: 16px 14px 14px;
       box-shadow:
@@ -59,6 +152,7 @@
       justify-content: space-between;
       gap: 8px;
       margin-bottom: 10px;
+      flex-wrap: wrap;
     }
 
     .title-group {
@@ -109,6 +203,12 @@
       appearance: none;
     }
 
+    body.theme-bright .select-wrap select,
+    body.theme-paper .select-wrap select {
+      background: rgba(249, 250, 251, 0.9);
+      border-color: rgba(148, 163, 184, 0.8);
+    }
+
     .select-wrap::after {
       content: "▾";
       position: absolute;
@@ -133,6 +233,7 @@
       box-shadow:
         0 0 0 1px rgba(250, 204, 21, 0.3),
         0 10px 20px rgba(248, 181, 0, 0.3);
+      white-space: nowrap;
     }
 
     .btn-pill:active {
@@ -161,6 +262,11 @@
       gap: 4px;
     }
 
+    body.theme-bright .badge,
+    body.theme-paper .badge {
+      background: rgba(249, 250, 251, 0.9);
+    }
+
     .badge-dot {
       width: 6px;
       height: 6px;
@@ -178,8 +284,15 @@
     .grid-wrap {
       padding: 10px;
       border-radius: 12px;
-      background: radial-gradient(circle at top, #020617, #020617 40%, #030712);
+      background: radial-gradient(circle at top, var(--card), #030712);
       box-shadow: inset 0 0 0 1px rgba(75, 85, 99, 0.3);
+      position: relative;
+    }
+
+    body.theme-bright .grid-wrap,
+    body.theme-paper .grid-wrap {
+      background: var(--card);
+      box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.6);
     }
 
     .grid {
@@ -229,7 +342,6 @@
       border-bottom: 1px solid var(--grid-line);
     }
 
-    /* Thicker subgrid borders */
     .cell[data-col="2"],
     .cell[data-col="5"] {
       border-right: 2px solid var(--grid-sub);
@@ -241,7 +353,7 @@
     }
 
     .cell.given {
-      background: #020617;
+      background: var(--cell-bg);
       color: var(--given);
       font-weight: 700;
     }
@@ -251,31 +363,74 @@
     }
 
     .cell.selected {
-      background: linear-gradient(145deg, #1d4ed8, #0f172a);
+      background: linear-gradient(145deg, var(--cell-selected), #0f172a);
       color: #fefce8;
     }
 
+    .cell.related:not(.selected) {
+      background: var(--cell-related);
+    }
+
     .cell.same-value:not(.selected) {
-  background: rgba(250, 204, 21, 0.18);      /* soft yellow glow */
-  box-shadow: inset 0 0 0 1px rgba(250, 204, 21, 0.7);
-  color: #facc15;                             /* brighter text */
-  font-weight: 700;
-}
+      background: rgba(250, 204, 21, 0.18);
+      box-shadow: inset 0 0 0 1px rgba(250, 204, 21, 0.7);
+      color: #facc15;
+      font-weight: 700;
+    }
+
+    body.theme-bright .cell.same-value:not(.selected),
+    body.theme-paper .cell.same-value:not(.selected) {
+      background: rgba(37, 99, 235, 0.12);
+      box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.7);
+      color: #1d4ed8;
+    }
 
     .cell.conflict {
       color: var(--error);
       text-shadow: 0 0 6px rgba(248, 113, 113, 0.6);
     }
 
-    .cell.highlight {
-      background: #020617;
-    }
-
     .cell:active {
-      filter: brightness(1.1);
+      filter: brightness(1.08);
     }
 
-    /* Number pad */
+    /* POPUP PAD AROUND CELL */
+
+    .popup-pad {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      padding: 6px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.95);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+      z-index: 5;
+    }
+
+    body.theme-bright .popup-pad,
+    body.theme-paper .popup-pad {
+      background: rgba(249, 250, 251, 0.98);
+      box-shadow: 0 10px 25px rgba(148, 163, 184, 0.9);
+    }
+
+    .popup-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: var(--cell-bg);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .popup-btn:active {
+      transform: translateY(1px);
+    }
+
+    /* Number pad at bottom */
 
     .pad {
       margin-top: 12px;
@@ -292,6 +447,11 @@
       padding: 10px 0;
       font-size: 16px;
       font-weight: 500;
+    }
+
+    body.theme-bright .pad-btn,
+    body.theme-paper .pad-btn {
+      background: #f9fafb;
     }
 
     .pad-btn.small {
@@ -317,6 +477,11 @@
       color: #bfdbfe;
     }
 
+    .pad-btn.hidden-num {
+      opacity: 0.15;
+      pointer-events: none;
+    }
+
     .pad-btn:active {
       transform: translateY(1px);
     }
@@ -333,14 +498,23 @@
       font-weight: 600;
     }
 
+    .hidden {
+      display: none !important;
+    }
+
     @media (max-width: 360px) {
       .card { padding: 12px 10px; }
       .cell { font-size: 16px; }
       .pad-btn { padding: 8px 0; }
+      .popup-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 13px;
+      }
     }
   </style>
 </head>
-<body>
+<body class="theme-dark">
 <div class="app">
   <div class="card">
     <div class="header-row">
@@ -358,6 +532,15 @@
           <option value="hard">Hard</option>
         </select>
       </div>
+      <div class="select-wrap">
+        <select id="themeSelect">
+          <option value="dark" selected>Dark</option>
+          <option value="contrast">High Contrast</option>
+          <option value="bright">Bright</option>
+          <option value="neon">Neon</option>
+          <option value="paper">Paper</option>
+        </select>
+      </div>
       <button id="newGameBtn" class="btn-pill">New Puzzle</button>
     </div>
 
@@ -371,6 +554,19 @@
 
     <div class="grid-wrap">
       <div id="grid" class="grid"></div>
+
+      <!-- popup pad over a blank cell -->
+      <div id="popupPad" class="popup-pad hidden">
+        <button class="popup-btn" data-num="1">1</button>
+        <button class="popup-btn" data-num="2">2</button>
+        <button class="popup-btn" data-num="3">3</button>
+        <button class="popup-btn" data-num="4">4</button>
+        <button class="popup-btn" data-num="5">5</button>
+        <button class="popup-btn" data-num="6">6</button>
+        <button class="popup-btn" data-num="7">7</button>
+        <button class="popup-btn" data-num="8">8</button>
+        <button class="popup-btn" data-num="9">9</button>
+      </div>
     </div>
 
     <div class="pad">
@@ -418,9 +614,11 @@
   let startTime = null;
   let timerInterval = null;
   let currentDifficulty = "medium";
+  let currentTheme = "dark";
 
   const gridEl = document.getElementById("grid");
   const difficultyEl = document.getElementById("difficulty");
+  const themeSelect = document.getElementById("themeSelect");
   const newGameBtn = document.getElementById("newGameBtn");
   const statusText = document.getElementById("statusText");
   const timerEl = document.getElementById("timer");
@@ -429,6 +627,13 @@
   const clearNotesBtn = document.getElementById("clearNotesBtn");
   const checkBtn = document.getElementById("checkBtn");
   const hintBtn = document.getElementById("hintBtn");
+  const popupPad = document.getElementById("popupPad");
+
+  function applyTheme(theme) {
+    const themes = ["dark", "contrast", "bright", "neon", "paper"];
+    themes.forEach(t => document.body.classList.remove("theme-" + t));
+    document.body.classList.add("theme-" + theme);
+  }
 
   function indexToRC(index) {
     return { row: Math.floor(index / 9), col: index % 9 };
@@ -454,6 +659,7 @@
     selectedIndex = null;
     notesMode = false;
     notesBtn.classList.remove("toggled");
+    hidePopupPad();
     startTimer();
     statusText.textContent = "In progress";
     saveState();
@@ -505,7 +711,7 @@
 
   function findConflicts() {
     const conflicts = new Set();
-    // check rows
+    // rows
     for (let r = 0; r < 9; r++) {
       const seen = {};
       for (let c = 0; c < 9; c++) {
@@ -520,7 +726,7 @@
         }
       }
     }
-    // check cols
+    // cols
     for (let c = 0; c < 9; c++) {
       const seen = {};
       for (let r = 0; r < 9; r++) {
@@ -535,7 +741,7 @@
         }
       }
     }
-    // check boxes
+    // boxes
     for (let br = 0; br < 3; br++) {
       for (let bc = 0; bc < 3; bc++) {
         const seen = {};
@@ -588,9 +794,15 @@
     return all;
   }
 
-  function handleCellTap(index) {
+  function handleCellTap(index, evt) {
     selectedIndex = index;
+    const isBlankEditable = !given[index] && board[index] === 0;
     render();
+    if (isBlankEditable && !notesMode && evt && evt.currentTarget) {
+      showPopupPad(evt.currentTarget);
+    } else {
+      hidePopupPad();
+    }
   }
 
   function handleNumberTap(num) {
@@ -613,6 +825,7 @@
         statusText.textContent = "In progress";
       }
     }
+    hidePopupPad();
     saveState();
     render();
   }
@@ -623,6 +836,7 @@
     board[selectedIndex] = 0;
     notes[selectedIndex].clear();
     statusText.textContent = "In progress";
+    hidePopupPad();
     saveState();
     render();
   }
@@ -638,7 +852,6 @@
   }
 
   function handleHint() {
-    // Very gentle "hint": if only one candidate fits in selected empty cell
     if (selectedIndex === null || given[selectedIndex]) return;
     if (board[selectedIndex] !== 0) return;
     const cands = computeCandidates(selectedIndex);
@@ -661,6 +874,8 @@
   function toggleNotesMode() {
     notesMode = !notesMode;
     notesBtn.classList.toggle("toggled", notesMode);
+    hidePopupPad();
+    render(); // so number pad visibility updates
   }
 
   function clearNotes() {
@@ -677,10 +892,11 @@
         given,
         notes: notes.map(s => Array.from(s)),
         difficulty: currentDifficulty,
+        theme: currentTheme,
         startTime,
         timestamp: Date.now()
       };
-      localStorage.setItem("sudokuStateV1", JSON.stringify(state));
+      localStorage.setItem("sudokuStateV2", JSON.stringify(state));
     } catch (e) {
       // ignore
     }
@@ -688,14 +904,17 @@
 
   function loadState() {
     try {
-      const raw = localStorage.getItem("sudokuStateV1");
+      const raw = localStorage.getItem("sudokuStateV2");
       if (!raw) return false;
       const state = JSON.parse(raw);
       board = state.board || board;
       given = state.given || given;
       notes = (state.notes || []).map(arr => new Set(arr));
       currentDifficulty = state.difficulty || "medium";
+      currentTheme = state.theme || "dark";
       difficultyEl.value = currentDifficulty;
+      themeSelect.value = currentTheme;
+      applyTheme(currentTheme);
       startTime = state.startTime ? state.startTime : Date.now();
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(updateTimer, 1000);
@@ -705,6 +924,35 @@
     } catch (e) {
       return false;
     }
+  }
+
+  function updatePadVisibility() {
+    const counts = Array(10).fill(0);
+    for (let i = 0; i < 81; i++) {
+      if (board[i]) counts[board[i]]++;
+    }
+    document.querySelectorAll(".pad-btn[data-num]").forEach(btn => {
+      const num = parseInt(btn.dataset.num, 10);
+      if (!notesMode && counts[num] >= 9) {
+        btn.classList.add("hidden-num");
+      } else {
+        btn.classList.remove("hidden-num");
+      }
+    });
+  }
+
+  function hidePopupPad() {
+    popupPad.classList.add("hidden");
+  }
+
+  function showPopupPad(cellEl) {
+    const gridRect = gridEl.getBoundingClientRect();
+    const cellRect = cellEl.getBoundingClientRect();
+    const x = cellRect.left + cellRect.width / 2 - gridRect.left;
+    const y = cellRect.top + cellRect.height / 2 - gridRect.top;
+    popupPad.style.left = x + "px";
+    popupPad.style.top = y + "px";
+    popupPad.classList.remove("hidden");
   }
 
   function render(conflictsOverride) {
@@ -733,17 +981,17 @@
         inner.textContent = board[i];
       } else if (notes[i].size > 0) {
         const small = document.createElement("div");
-        small.style.fontSize = "9px";
+        small.style.fontSize = "11px";
         small.style.lineHeight = "1.1";
-        small.style.opacity = "0.8";
+        small.style.opacity = "0.9";
         small.style.display = "grid";
         small.style.gridTemplateColumns = "repeat(3, 1fr)";
-        small.style.width = "90%";
-        small.style.height = "90%";
+        small.style.width = "95%";
+        small.style.height = "95%";
         for (let n = 1; n <= 9; n++) {
           const span = document.createElement("span");
-          span.style.fontSize = "8px";
-          span.style.opacity = notes[i].has(n) ? "1" : "0.25";
+          span.style.fontSize = "10px";
+          span.style.opacity = notes[i].has(n) ? "1" : "0.18";
           span.textContent = notes[i].has(n) ? n : " ";
           small.appendChild(span);
         }
@@ -770,15 +1018,23 @@
         cell.classList.add("conflict");
       }
 
-      cell.addEventListener("click", () => handleCellTap(i));
+      cell.addEventListener("click", (evt) => handleCellTap(i, evt));
       cell.appendChild(inner);
       gridEl.appendChild(cell);
     }
+
+    updatePadVisibility();
   }
 
   // Event wiring
   difficultyEl.addEventListener("change", () => {
     currentDifficulty = difficultyEl.value;
+  });
+
+  themeSelect.addEventListener("change", () => {
+    currentTheme = themeSelect.value;
+    applyTheme(currentTheme);
+    saveState();
   });
 
   newGameBtn.addEventListener("click", () => {
@@ -792,6 +1048,13 @@
     });
   });
 
+  document.querySelectorAll("#popupPad .popup-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const num = parseInt(btn.dataset.num, 10);
+      handleNumberTap(num);
+    });
+  });
+
   eraseBtn.addEventListener("click", handleErase);
   notesBtn.addEventListener("click", toggleNotesMode);
   clearNotesBtn.addEventListener("click", clearNotes);
@@ -799,6 +1062,7 @@
   hintBtn.addEventListener("click", handleHint);
 
   // Init
+  applyTheme(currentTheme);
   if (!loadState()) {
     loadRandomPuzzle(currentDifficulty);
   } else {

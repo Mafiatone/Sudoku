@@ -805,29 +805,48 @@
   }
 
   function handleNumberTap(num) {
-    if (selectedIndex === null) return;
-    if (given[selectedIndex]) return;
+  if (selectedIndex === null) return;
+  if (given[selectedIndex]) return;
 
-    if (notesMode) {
-      // toggle notes
-      const set = notes[selectedIndex];
-      if (set.has(num)) set.delete(num);
-      else set.add(num);
-      board[selectedIndex] = 0;
+  const idx = selectedIndex;
+
+  if (notesMode) {
+    // NOTES MODE – toggle pencil marks, don’t place a final value
+    const set = notes[idx];
+    if (set.has(num)) {
+      set.delete(num);
     } else {
-      notes[selectedIndex].clear();
-      board[selectedIndex] = num;
-      if (isSolved()) {
-        statusText.textContent = "Completed 🎉";
-        if (timerInterval) clearInterval(timerInterval);
-      } else {
-        statusText.textContent = "In progress";
-      }
+      set.add(num);
     }
-    hidePopupPad();
-    saveState();
-    render();
+    board[idx] = 0;
+    statusText.textContent = "Notes updated";
+  } else {
+    // NORMAL MODE – only allow move if it doesn’t break Sudoku rules
+    const previous = board[idx];
+    board[idx] = num;
+
+    // if this placement breaks row/col/box rules, revert it
+    if (!isValidPlacement(idx, num)) {
+      board[idx] = previous;
+      statusText.textContent = "That number conflicts with row, column or box.";
+      // optional: briefly show conflicts
+      const conflicts = findConflicts();
+      render(conflicts);
+      return;
+    }
+
+    // move is valid – clear notes in this cell
+    notes[idx].clear();
+    statusText.textContent = "In progress";
+
+    // if you want, we can also auto-clear this number from notes
+    // in the same row/col/box in a later step
   }
+
+  hideCellPicker();
+  saveState();
+  render();
+}
 
   function handleErase() {
     if (selectedIndex === null) return;

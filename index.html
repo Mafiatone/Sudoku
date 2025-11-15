@@ -1074,20 +1074,37 @@ function isSolvedCompletely() {
   /* RENDERING */
 
   function updatePadVisibility() {
-    const counts = Array(10).fill(0);
-    for (let i = 0; i < 81; i++) {
-      const v = board[i];
-      if (v) counts[v]++;
-    }
-    padButtons.forEach(btn => {
-      const num = parseInt(btn.dataset.num, 10);
-      if (!notesMode && counts[num] >= 9) {
-        btn.classList.add("hidden-num");
-      } else {
-        btn.classList.remove("hidden-num");
+  const counts = Array(10).fill(0);
+
+  for (let i = 0; i < 81; i++) {
+    const v = board[i];
+    if (!v) continue;
+
+    // If we know the solution, only count digits that are
+    // in the correct place. Wrong guesses don't "use up" the number.
+    if (solution) {
+      if (v === solution[i]) {
+        counts[v]++;
       }
-    });
+    } else {
+      // Fallback (shouldn't really happen with our static puzzles)
+      counts[v]++;
+    }
   }
+
+  padButtons.forEach(btn => {
+    const num = parseInt(btn.dataset.num, 10);
+
+    // Hide only if:
+    // - NOT in notes mode
+    // - and all 9 of this digit are correctly placed
+    if (!notesMode && counts[num] >= 9) {
+      btn.classList.add("hidden-num");
+    } else {
+      btn.classList.remove("hidden-num");
+    }
+  });
+}
 
   function render(conflictsOverride) {
     gridEl.innerHTML = "";

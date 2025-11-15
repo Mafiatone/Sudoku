@@ -25,6 +25,7 @@
     }
 
     /* THEMES */
+
     body.theme-classic {
       --bg: #111827;
       --card: #020617;
@@ -79,6 +80,24 @@
       --same-text: #fb7185;
     }
 
+    body.theme-neonyellow {
+      --bg: #020617;
+      --card: #020617;
+      --accent: #facc15;
+      --grid-line: #facc15;
+      --grid-sub: #fde047;
+      --text: #fefce8;
+      --muted: #e5e7eb;
+      --error: #fb7185;
+      --given: #fefce8;
+      --cell-bg: #020617;
+      --cell-selected: #facc15;
+      --cell-related: #020617;
+      --same-bg: rgba(250, 204, 21, 0.25);
+      --same-border: rgba(250, 204, 21, 0.9);
+      --same-text: #facc15;
+    }
+
     body.theme-bright {
       --bg: #e5e7eb;
       --card: #f9fafb;
@@ -131,12 +150,13 @@
       width: 100%;
       max-width: 420px;
       padding: 16px;
+      position: relative;
     }
 
     .card {
       background: linear-gradient(145deg, var(--card), #030712);
       border-radius: 18px;
-      padding: 16px 14px 14px;
+      padding: 16px 14px 18px;
       box-shadow:
         0 20px 40px rgba(0, 0, 0, 0.7),
         0 0 0 1px rgba(148, 163, 184, 0.08);
@@ -488,13 +508,114 @@
       font-weight: 600;
     }
 
+    .stats-link {
+      margin-top: 6px;
+      text-align: center;
+    }
+
+    .stats-btn {
+      background: none;
+      border: none;
+      padding: 4px 8px;
+      font-size: 11px;
+      color: var(--muted);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .stats-btn:active {
+      transform: translateY(1px);
+    }
+
+    /* STATS OVERLAY */
+
+    .stats-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+    }
+
+    .stats-card {
+      width: 90%;
+      max-width: 360px;
+      background: var(--card);
+      border-radius: 16px;
+      padding: 16px 16px 14px;
+      box-shadow:
+        0 20px 40px rgba(0, 0, 0, 0.8),
+        0 0 0 1px rgba(148, 163, 184, 0.3);
+    }
+
+    .stats-card h2 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .stats-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .stats-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+
+    .stats-table th,
+    .stats-table td {
+      padding: 4px 3px;
+      text-align: center;
+    }
+
+    .stats-table th {
+      color: var(--muted);
+      font-weight: 600;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.4);
+    }
+
+    .stats-table td {
+      border-bottom: 1px solid rgba(55, 65, 81, 0.4);
+    }
+
+    .stats-footer {
+      font-size: 10px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    .stats-close {
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.8);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text);
+      font-size: 11px;
+      padding: 4px 10px;
+    }
+
     .hidden { display: none !important; }
 
     @media (max-width: 360px) {
-      .card { padding: 12px 10px; }
+      .card { padding: 12px 10px 14px; }
       .cell { font-size: 16px; }
       .pad-btn { padding: 8px 0; }
       .popup-btn { width: 28px; height: 28px; font-size: 13px; }
+    }
+
+    /* Make conflicts extra obvious in Neon Pink */
+    body.theme-neonpink .cell.conflict {
+      background: rgba(250, 204, 21, 0.3);
+      color: #fef9c3;
+      box-shadow: 0 0 14px rgba(250, 204, 21, 0.95);
     }
   </style>
 </head>
@@ -511,7 +632,7 @@
     <div class="controls-row">
       <div class="select-wrap">
         <select id="difficulty">
-          <option value="easy">Easy</option>
+          <option value="easy" selected>Easy</option>
           <option value="medium">Medium</option>
           <option value="hard">Hard</option>
         </select>
@@ -520,6 +641,7 @@
         <select id="themeSelect">
           <option value="neon" selected>Neon Green</option>
           <option value="neonpink">Neon Pink</option>
+          <option value="neonyellow">Neon Yellow</option>
           <option value="classic">Classic Dark</option>
           <option value="bright">Bright</option>
           <option value="paper">Paper</option>
@@ -573,23 +695,63 @@
     <div class="footer">
       Progress is saved locally on this device. <b>No ads. No accounts.</b>
     </div>
+    <div class="stats-link">
+      <button id="statsBtn" class="stats-btn">Stats</button>
+    </div>
+  </div>
+
+  <!-- Stats overlay -->
+  <div id="statsOverlay" class="stats-overlay hidden">
+    <div class="stats-card">
+      <h2>Stats</h2>
+      <div class="stats-sub">
+        Tracked per difficulty on this device only.
+      </div>
+      <table class="stats-table">
+        <thead>
+          <tr>
+            <th>Level</th>
+            <th>Games</th>
+            <th>Best</th>
+            <th>Avg</th>
+            <th>Worst</th>
+          </tr>
+        </thead>
+        <tbody id="statsBody"></tbody>
+      </table>
+      <div class="stats-footer">
+        <span id="statsSummary"></span>
+        <button id="closeStatsBtn" class="stats-close">Close</button>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
-  // Puzzles (0 = empty). We'll add more / generator later.
+  // Multiple puzzles per difficulty (random pick each time)
+  // Each string is 81 chars, 0 = empty.
   const PUZZLES = {
     easy: [
-      "530070000600195000098000060800060003400803001700020006060000280000419005000080079"
+      "791020506350006090268951034430065000806070340900013000000007200000542079570000003",
+      "600070010040130000081000205092080003308020197406001000863009021007243568520000370",
+      "690082407004300005578614090000240030439000600010906054200001503381465200050000000",
+      "190006050060930017032001690005200004003897065270500030047600100021070000356040720"
     ],
     medium: [
-      "009000010040020000000500400050000000060000009000006030600070000000040090000800300"
+      "000000800501000070700058030460010093809200010000070068900046002350107900076000040",
+      "900762000200000901580004002000000750002047000000090014009080100710020460420600305",
+      "052000041700609300008005000007961000306004020405082107000090700800000005020007083",
+      "500029000009700002000510007100078090090040001460000028050096703000000009036207504"
     ],
     hard: [
-      "800000000003600000070090200050007000000045700000100030001000068008500010090000000"
+      "000006000006053009590000400030700050002900010008305006009000000800000003005078091",
+      "003709002600500000005080301000073090030000020900068503470000000060900000000040009",
+      "000003400150000200000020073000400000040038001008060300000002040039070028200051000",
+      "039000000070002904000000010000400090008001700014503800020010000005600000800004167"
     ]
   };
 
+  // Game state
   let board = new Array(81).fill(0);
   let given = new Array(81).fill(false);
   let notes = Array.from({ length: 81 }, () => new Set());
@@ -601,6 +763,13 @@
   let currentTheme = "neon";
   let currentPuzzleStr = null;
   let solution = null;
+
+  // Stats state
+  let stats = {
+    easy:   { games: 0, totalSeconds: 0, bestSeconds: null, worstSeconds: null },
+    medium: { games: 0, totalSeconds: 0, bestSeconds: null, worstSeconds: null },
+    hard:   { games: 0, totalSeconds: 0, bestSeconds: null, worstSeconds: null }
+  };
 
   const gridEl = document.getElementById("grid");
   const difficultyEl = document.getElementById("difficulty");
@@ -615,28 +784,40 @@
   const hintBtn = document.getElementById("hintBtn");
   const popupPad = document.getElementById("popupPad");
   const padButtons = document.querySelectorAll(".pad-btn[data-num]");
+  const statsOverlay = document.getElementById("statsOverlay");
+  const statsBody = document.getElementById("statsBody");
+  const statsSummary = document.getElementById("statsSummary");
+  const statsBtn = document.getElementById("statsBtn");
+  const closeStatsBtn = document.getElementById("closeStatsBtn");
 
   /* THEME */
 
   function applyTheme(theme) {
-    const classes = ["classic","neon","neonpink","bright","paper"];
-    classes.forEach(t => document.body.classList.remove("theme-" + t));
+    const all = ["classic","neon","neonpink","neonyellow","bright","paper"];
+    all.forEach(t => document.body.classList.remove("theme-" + t));
     document.body.classList.add("theme-" + theme);
   }
 
-  const savedTheme = localStorage.getItem("sudokuThemeV1");
-  if (savedTheme) {
-    currentTheme = savedTheme;
-    themeSelect.value = savedTheme;
-    applyTheme(savedTheme);
-  } else {
-    applyTheme(currentTheme);
+  function loadTheme() {
+    const saved = localStorage.getItem("sudokuThemeV1");
+    if (saved) {
+      currentTheme = saved;
+      applyTheme(saved);
+      themeSelect.value = saved;
+    } else {
+      applyTheme(currentTheme);
+      themeSelect.value = currentTheme;
+    }
+  }
+
+  function saveTheme() {
+    localStorage.setItem("sudokuThemeV1", currentTheme);
   }
 
   themeSelect.addEventListener("change", () => {
     currentTheme = themeSelect.value;
     applyTheme(currentTheme);
-    saveState();
+    saveTheme();
   });
 
   /* UTILS */
@@ -692,33 +873,33 @@
     return isValidValue(board, index, value);
   }
 
-  /* SOLVER (for Check / Hints, and later "no mistakes" mode if you want) */
+  /* SOLVER */
 
   function solveSudoku(initialBoard) {
     const b = cloneBoard(initialBoard);
 
     function findEmpty() {
-      for (let i = 0; i < 81; i++) {
-        if (b[i] === 0) return i;
-      }
+      for (let i = 0; i < 81; i++) if (b[i] === 0) return i;
       return -1;
     }
 
-    function solveRec() {
+    function backtrack() {
       const idx = findEmpty();
       if (idx === -1) return true;
 
-      for (let num = 1; num <= 9; num++) {
+      const nums = [1,2,3,4,5,6,7,8,9];
+      for (let k = 0; k < nums.length; k++) {
+        const num = nums[k];
         if (isValidValue(b, idx, num)) {
           b[idx] = num;
-          if (solveRec()) return true;
+          if (backtrack()) return true;
           b[idx] = 0;
         }
       }
       return false;
     }
 
-    if (solveRec()) return b;
+    if (backtrack()) return b;
     return null;
   }
 
@@ -742,6 +923,80 @@
     timerEl.textContent = m + ":" + s;
   }
 
+  /* STATS */
+
+  function loadStats() {
+    try {
+      const raw = localStorage.getItem("sudokuStatsV1");
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed.easy && parsed.medium && parsed.hard) {
+        stats = parsed;
+      }
+    } catch (e) {}
+  }
+
+  function saveStats() {
+    try {
+      localStorage.setItem("sudokuStatsV1", JSON.stringify(stats));
+    } catch (e) {}
+  }
+
+  function recordCompletion(diff, seconds) {
+    const s = stats[diff];
+    if (!s) return;
+    s.games++;
+    s.totalSeconds += seconds;
+    if (s.bestSeconds === null || seconds < s.bestSeconds) s.bestSeconds = seconds;
+    if (s.worstSeconds === null || seconds > s.worstSeconds) s.worstSeconds = seconds;
+    saveStats();
+  }
+
+  function formatSeconds(sec) {
+    if (sec === null || sec === undefined) return "—";
+    const s = Math.max(0, Math.floor(sec));
+    const m = String(Math.floor(s / 60)).padStart(2, "0");
+    const ss = String(s % 60).padStart(2, "0");
+    return `${m}:${ss}`;
+  }
+
+  function updateStatsOverlay() {
+    const diffs = ["easy","medium","hard"];
+    const labels = { easy: "Easy", medium: "Medium", hard: "Hard" };
+    let totalGames = 0;
+    statsBody.innerHTML = "";
+
+    diffs.forEach(d => {
+      const s = stats[d];
+      totalGames += s.games;
+      const avg = s.games ? s.totalSeconds / s.games : null;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${labels[d]}</td>
+        <td>${s.games}</td>
+        <td>${formatSeconds(s.bestSeconds)}</td>
+        <td>${formatSeconds(avg)}</td>
+        <td>${formatSeconds(s.worstSeconds)}</td>
+      `;
+      statsBody.appendChild(tr);
+    });
+
+    statsSummary.textContent = `Total games: ${totalGames}`;
+  }
+
+  statsBtn.addEventListener("click", () => {
+    updateStatsOverlay();
+    statsOverlay.classList.remove("hidden");
+  });
+
+  closeStatsBtn.addEventListener("click", () => {
+    statsOverlay.classList.add("hidden");
+  });
+
+  statsOverlay.addEventListener("click", (e) => {
+    if (e.target === statsOverlay) statsOverlay.classList.add("hidden");
+  });
+
   /* STATE LOAD/SAVE */
 
   function saveState() {
@@ -756,7 +1011,6 @@
         startTime
       };
       localStorage.setItem("sudokuStateMain", JSON.stringify(state));
-      localStorage.setItem("sudokuThemeV1", currentTheme);
     } catch (e) {}
   }
 
@@ -770,11 +1024,7 @@
       notes = (state.notes || []).map(arr => new Set(arr));
       currentDifficulty = state.difficulty || "easy";
       currentPuzzleStr = state.puzzle || null;
-      currentTheme = state.theme || "neon";
-
       difficultyEl.value = currentDifficulty;
-      themeSelect.value = currentTheme;
-      applyTheme(currentTheme);
 
       if (currentPuzzleStr) {
         const base = puzzleStringToBoard(currentPuzzleStr);
@@ -906,16 +1156,13 @@
     }
   }
 
-function isSolvedCompletely() {
-  // With strict "no mistakes" mode, solved means:
-  // every cell matches the solution
-  if (!solution) return false;
-  for (let i = 0; i < 81; i++) {
-    if (board[i] !== solution[i]) return false;
+  function isSolvedCompletely() {
+    if (!solution) return false;
+    for (let i = 0; i < 81; i++) {
+      if (board[i] !== solution[i]) return false;
+    }
+    return true;
   }
-  return true;
-}
-
 
   /* POPUP PAD */
 
@@ -952,60 +1199,62 @@ function isSolvedCompletely() {
     }
   }
 
- function handleNumberTap(num) {
-  if (selectedIndex === null) return;
-  if (given[selectedIndex]) return;
+  function handleNumberTap(num) {
+    if (selectedIndex === null) return;
+    if (given[selectedIndex]) return;
 
-  const idx = selectedIndex;
+    const idx = selectedIndex;
 
-  // NOTES MODE – pencil marks only
-  if (notesMode) {
-    const set = notes[idx];
-    if (set.has(num)) set.delete(num);
-    else set.add(num);
-    board[idx] = 0;
-    statusText.textContent = "Notes updated";
+    // NOTES MODE – pencil marks only
+    if (notesMode) {
+      const set = notes[idx];
+      if (set.has(num)) set.delete(num);
+      else set.add(num);
+      board[idx] = 0;
+      statusText.textContent = "Notes updated";
+      hidePopupPad();
+      saveState();
+      render();
+      return;
+    }
+
+    // NORMAL MODE – strict "no mistakes"
+    board[idx] = num;
+
+    // 1) Rule conflicts (row/column/box)
+    const conflicts = findRuleConflicts();
+
+    // 2) Solution-based conflict (wrong number even if rules OK)
+    if (solution && board[idx] !== solution[idx]) {
+      conflicts.add(idx);
+    }
+
+    if (conflicts.size > 0) {
+      // Wrong move: keep the number, show in red
+      statusText.textContent = "That number can't go there.";
+      hidePopupPad();
+      saveState();
+      render(conflicts);
+      return;
+    }
+
+    // Valid move
+    notes[idx].clear();
+    clearDigitFromPeers(idx, num);
+
+    if (isSolvedCompletely()) {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      recordCompletion(currentDifficulty, elapsed);
+      statusText.textContent = "Completed 🎉";
+      if (timerInterval) clearInterval(timerInterval);
+    } else {
+      statusText.textContent = "In progress";
+    }
+
     hidePopupPad();
     saveState();
     render();
-    return;
   }
-
-  // NORMAL MODE – always place the number first
-  board[idx] = num;
-
-  // 1) Check row/column/box conflicts
-  const conflicts = findRuleConflicts();
-
-  // 2) Check against the true solution (strict "no mistakes" mode)
-  if (solution && board[idx] !== solution[idx]) {
-    conflicts.add(idx);
-  }
-
-  if (conflicts.size > 0) {
-    // ❌ Wrong move: keep the number, show it in red
-    statusText.textContent = "That number can't go there.";
-    hidePopupPad();
-    saveState();
-    render(conflicts);   // cell stays filled but highlighted as error
-    return;
-  }
-
-  // ✅ Move is valid: clear notes in this cell and peers
-  notes[idx].clear();
-  clearDigitFromPeers(idx, num);
-
-  if (isSolvedCompletely()) {
-    statusText.textContent = "Completed 🎉";
-    if (timerInterval) clearInterval(timerInterval);
-  } else {
-    statusText.textContent = "In progress";
-  }
-
-  hidePopupPad();
-  saveState();
-  render();
-}
 
   function handleErase() {
     if (selectedIndex === null) return;
@@ -1041,20 +1290,20 @@ function isSolvedCompletely() {
   function handleHint() {
     if (selectedIndex === null || given[selectedIndex]) return;
     if (board[selectedIndex] !== 0) return;
+    if (!solution) return;
 
-    if (solution) {
-      board[selectedIndex] = solution[selectedIndex];
-      notes[selectedIndex].clear();
-      clearDigitFromPeers(selectedIndex, board[selectedIndex]);
-      statusText.textContent = "Hint applied 💡";
-      if (isSolvedCompletely()) {
-        statusText.textContent = "Completed 🎉";
-        if (timerInterval) clearInterval(timerInterval);
-      }
-      saveState();
-      render();
-      return;
+    board[selectedIndex] = solution[selectedIndex];
+    notes[selectedIndex].clear();
+    clearDigitFromPeers(selectedIndex, board[selectedIndex]);
+    statusText.textContent = "Hint applied 💡";
+    if (isSolvedCompletely()) {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      recordCompletion(currentDifficulty, elapsed);
+      statusText.textContent = "Completed 🎉";
+      if (timerInterval) clearInterval(timerInterval);
     }
+    saveState();
+    render();
   }
 
   function toggleNotesMode() {
@@ -1074,37 +1323,28 @@ function isSolvedCompletely() {
   /* RENDERING */
 
   function updatePadVisibility() {
-  const counts = Array(10).fill(0);
+    const counts = Array(10).fill(0);
 
-  for (let i = 0; i < 81; i++) {
-    const v = board[i];
-    if (!v) continue;
+    for (let i = 0; i < 81; i++) {
+      const v = board[i];
+      if (!v) continue;
 
-    // If we know the solution, only count digits that are
-    // in the correct place. Wrong guesses don't "use up" the number.
-    if (solution) {
-      if (v === solution[i]) {
+      if (solution) {
+        if (v === solution[i]) counts[v]++;
+      } else {
         counts[v]++;
       }
-    } else {
-      // Fallback (shouldn't really happen with our static puzzles)
-      counts[v]++;
     }
+
+    padButtons.forEach(btn => {
+      const num = parseInt(btn.dataset.num, 10);
+      if (!notesMode && counts[num] >= 9) {
+        btn.classList.add("hidden-num");
+      } else {
+        btn.classList.remove("hidden-num");
+      }
+    });
   }
-
-  padButtons.forEach(btn => {
-    const num = parseInt(btn.dataset.num, 10);
-
-    // Hide only if:
-    // - NOT in notes mode
-    // - and all 9 of this digit are correctly placed
-    if (!notesMode && counts[num] >= 9) {
-      btn.classList.add("hidden-num");
-    } else {
-      btn.classList.remove("hidden-num");
-    }
-  });
-}
 
   function render(conflictsOverride) {
     gridEl.innerHTML = "";
@@ -1208,6 +1448,9 @@ function isSolvedCompletely() {
   hintBtn.addEventListener("click", handleHint);
 
   /* INIT */
+
+  loadTheme();
+  loadStats();
 
   if (!loadState()) {
     loadRandomPuzzle(currentDifficulty);

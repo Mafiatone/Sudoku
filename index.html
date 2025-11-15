@@ -7,85 +7,46 @@
   <style>
     :root {
       font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-      /* default (dark) */
       --bg: #111827;
       --card: #020617;
       --accent: #fbbf24;
-      --accent-soft: #1e293b;
       --grid-line: #374151;
       --grid-sub: #4b5563;
       --text: #e5e7eb;
       --muted: #9ca3af;
-      --error: #f87171;
-      --given: #e5e7eb;
-      --cell-bg: #020617;
-      --cell-hover: #111827;
-      --cell-selected: #1d4ed8;
-      --cell-related: #111827;
-      --cell-highlight: #111827;
-    }
-
-    /* THEME OVERRIDES */
-
-    body.theme-dark {
-      --bg: #111827;
-      --card: #020617;
-      --accent: #fbbf24;
-      --accent-soft: #1e293b;
-      --grid-line: #374151;
-      --grid-sub: #4b5563;
-      --text: #e5e7eb;
-      --muted: #9ca3af;
-      --error: #f87171;
-      --given: #e5e7eb;
-      --cell-bg: #020617;
-      --cell-hover: #111827;
-      --cell-selected: #1d4ed8;
-      --cell-related: #111827;
-      --cell-highlight: #111827;
-    }
-
-    body.theme-contrast {
-      --bg: #020617;
-      --card: #020617;
-      --accent: #f97316;
-      --accent-soft: #111827;
-      --grid-line: #9ca3af;
-      --grid-sub: #e5e7eb;
-      --text: #f9fafb;
-      --muted: #d1d5db;
       --error: #f97373;
-      --given: #ffffff;
+      --given: #e5e7eb;
       --cell-bg: #020617;
-      --cell-hover: #111827;
-      --cell-selected: #22c55e;
-      --cell-related: #030712;
-      --cell-highlight: #111827;
+      --cell-selected: #1d4ed8;
+      --cell-related: #020617;
+      --same-bg: rgba(250, 204, 21, 0.18);
+      --same-border: rgba(250, 204, 21, 0.7);
+      --same-text: #facc15;
     }
 
-    body.theme-bright {
-      --bg: #e5e7eb;
-      --card: #f9fafb;
-      --accent: #2563eb;
-      --accent-soft: #e5e7eb;
-      --grid-line: #d1d5db;
-      --grid-sub: #9ca3af;
-      --text: #111827;
-      --muted: #6b7280;
-      --error: #b91c1c;
-      --given: #111827;
-      --cell-bg: #ffffff;
-      --cell-hover: #e5e7eb;
-      --cell-selected: #2563eb;
-      --cell-related: #e5e7eb;
-      --cell-highlight: #e5e7eb;
+    /* THEMES */
+    body.theme-classic {
+      --bg: #111827;
+      --card: #020617;
+      --accent: #fbbf24;
+      --grid-line: #374151;
+      --grid-sub: #4b5563;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --error: #f97373;
+      --given: #e5e7eb;
+      --cell-bg: #020617;
+      --cell-selected: #1d4ed8;
+      --cell-related: #020617;
+      --same-bg: rgba(250, 204, 21, 0.18);
+      --same-border: rgba(250, 204, 21, 0.7);
+      --same-text: #facc15;
     }
 
     body.theme-neon {
       --bg: #020617;
       --card: #020617;
       --accent: #22c55e;
-      --accent-soft: #0f172a;
       --grid-line: #22c55e;
       --grid-sub: #4ade80;
       --text: #e5e7eb;
@@ -93,17 +54,53 @@
       --error: #fb7185;
       --given: #f9fafb;
       --cell-bg: #020617;
-      --cell-hover: #0f172a;
       --cell-selected: #22c55e;
       --cell-related: #020617;
-      --cell-highlight: #0f172a;
+      --same-bg: rgba(34, 197, 94, 0.18);
+      --same-border: rgba(34, 197, 94, 0.7);
+      --same-text: #4ade80;
+    }
+
+    body.theme-neonpink {
+      --bg: #020617;
+      --card: #020617;
+      --accent: #ec4899;
+      --grid-line: #ec4899;
+      --grid-sub: #fb7185;
+      --text: #f9fafb;
+      --muted: #e5e7eb;
+      --error: #fb7185;
+      --given: #fdf2f8;
+      --cell-bg: #020617;
+      --cell-selected: #ec4899;
+      --cell-related: #020617;
+      --same-bg: rgba(236, 72, 153, 0.2);
+      --same-border: rgba(236, 72, 153, 0.85);
+      --same-text: #fb7185;
+    }
+
+    body.theme-bright {
+      --bg: #e5e7eb;
+      --card: #f9fafb;
+      --accent: #2563eb;
+      --grid-line: #d1d5db;
+      --grid-sub: #9ca3af;
+      --text: #111827;
+      --muted: #6b7280;
+      --error: #b91c1c;
+      --given: #111827;
+      --cell-bg: #ffffff;
+      --cell-selected: #2563eb;
+      --cell-related: #e5e7eb;
+      --same-bg: rgba(37, 99, 235, 0.15);
+      --same-border: rgba(37, 99, 235, 0.8);
+      --same-text: #1d4ed8;
     }
 
     body.theme-paper {
       --bg: #fef9c3;
       --card: #fffbeb;
       --accent: #b45309;
-      --accent-soft: #fef3c7;
       --grid-line: #d97706;
       --grid-sub: #92400e;
       --text: #1f2937;
@@ -111,15 +108,14 @@
       --error: #b91c1c;
       --given: #1f2937;
       --cell-bg: #fffbeb;
-      --cell-hover: #fef3c7;
       --cell-selected: #f59e0b;
       --cell-related: #fef3c7;
-      --cell-highlight: #fef3c7;
+      --same-bg: rgba(245, 158, 11, 0.2);
+      --same-border: rgba(217, 119, 6, 0.85);
+      --same-text: #b45309;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -180,8 +176,7 @@
       flex-wrap: wrap;
     }
 
-    select,
-    button {
+    select, button {
       font: inherit;
     }
 
@@ -205,8 +200,8 @@
 
     body.theme-bright .select-wrap select,
     body.theme-paper .select-wrap select {
-      background: rgba(249, 250, 251, 0.9);
-      border-color: rgba(148, 163, 184, 0.8);
+      background: rgba(249, 250, 251, 0.95);
+      color: #111827;
     }
 
     .select-wrap::after {
@@ -264,7 +259,7 @@
 
     body.theme-bright .badge,
     body.theme-paper .badge {
-      background: rgba(249, 250, 251, 0.9);
+      background: rgba(249, 250, 251, 0.95);
     }
 
     .badge-dot {
@@ -372,17 +367,10 @@
     }
 
     .cell.same-value:not(.selected) {
-      background: rgba(250, 204, 21, 0.18);
-      box-shadow: inset 0 0 0 1px rgba(250, 204, 21, 0.7);
-      color: #facc15;
+      background: var(--same-bg);
+      box-shadow: inset 0 0 0 1px var(--same-border);
+      color: var(--same-text);
       font-weight: 700;
-    }
-
-    body.theme-bright .cell.same-value:not(.selected),
-    body.theme-paper .cell.same-value:not(.selected) {
-      background: rgba(37, 99, 235, 0.12);
-      box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.7);
-      color: #1d4ed8;
     }
 
     .cell.conflict {
@@ -394,7 +382,7 @@
       filter: brightness(1.08);
     }
 
-    /* POPUP PAD AROUND CELL */
+    /* POPUP PAD */
 
     .popup-pad {
       position: absolute;
@@ -404,7 +392,7 @@
       gap: 4px;
       padding: 6px;
       border-radius: 999px;
-      background: rgba(15, 23, 42, 0.95);
+      background: rgba(15, 23, 42, 0.96);
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
       z-index: 5;
     }
@@ -430,7 +418,7 @@
       transform: translateY(1px);
     }
 
-    /* Number pad at bottom */
+    /* PAD */
 
     .pad {
       margin-top: 12px;
@@ -447,11 +435,13 @@
       padding: 10px 0;
       font-size: 16px;
       font-weight: 500;
+      transition: opacity 0.15s ease;
     }
 
     body.theme-bright .pad-btn,
     body.theme-paper .pad-btn {
       background: #f9fafb;
+      color: #111827;
     }
 
     .pad-btn.small {
@@ -498,23 +488,17 @@
       font-weight: 600;
     }
 
-    .hidden {
-      display: none !important;
-    }
+    .hidden { display: none !important; }
 
     @media (max-width: 360px) {
       .card { padding: 12px 10px; }
       .cell { font-size: 16px; }
       .pad-btn { padding: 8px 0; }
-      .popup-btn {
-        width: 28px;
-        height: 28px;
-        font-size: 13px;
-      }
+      .popup-btn { width: 28px; height: 28px; font-size: 13px; }
     }
   </style>
 </head>
-<body class="theme-dark">
+<body class="theme-neon">
 <div class="app">
   <div class="card">
     <div class="header-row">
@@ -528,16 +512,16 @@
       <div class="select-wrap">
         <select id="difficulty">
           <option value="easy">Easy</option>
-          <option value="medium" selected>Medium</option>
+          <option value="medium">Medium</option>
           <option value="hard">Hard</option>
         </select>
       </div>
       <div class="select-wrap">
         <select id="themeSelect">
-          <option value="dark" selected>Dark</option>
-          <option value="contrast">High Contrast</option>
+          <option value="neon" selected>Neon Green</option>
+          <option value="neonpink">Neon Pink</option>
+          <option value="classic">Classic Dark</option>
           <option value="bright">Bright</option>
-          <option value="neon">Neon</option>
           <option value="paper">Paper</option>
         </select>
       </div>
@@ -555,7 +539,7 @@
     <div class="grid-wrap">
       <div id="grid" class="grid"></div>
 
-      <!-- popup pad over a blank cell -->
+      <!-- popup pad -->
       <div id="popupPad" class="popup-pad hidden">
         <button class="popup-btn" data-num="1">1</button>
         <button class="popup-btn" data-num="2">2</button>
@@ -591,8 +575,9 @@
     </div>
   </div>
 </div>
+
 <script>
-  // Simple set of puzzles (0 = empty)
+  // Puzzles (0 = empty). We'll add more / generator later.
   const PUZZLES = {
     easy: [
       "530070000600195000098000060800060003400803001700020006060000280000419005000080079"
@@ -605,15 +590,17 @@
     ]
   };
 
-  let board = new Array(81).fill(0);        // current values
-  let given = new Array(81).fill(false);    // fixed cells
+  let board = new Array(81).fill(0);
+  let given = new Array(81).fill(false);
   let notes = Array.from({ length: 81 }, () => new Set());
   let selectedIndex = null;
   let notesMode = false;
   let startTime = null;
   let timerInterval = null;
-  let currentDifficulty = "medium";
-  let currentTheme = "dark";
+  let currentDifficulty = "easy";
+  let currentTheme = "neon";
+  let currentPuzzleStr = null;
+  let solution = null;
 
   const gridEl = document.getElementById("grid");
   const difficultyEl = document.getElementById("difficulty");
@@ -627,43 +614,115 @@
   const checkBtn = document.getElementById("checkBtn");
   const hintBtn = document.getElementById("hintBtn");
   const popupPad = document.getElementById("popupPad");
+  const padButtons = document.querySelectorAll(".pad-btn[data-num]");
+
+  /* THEME */
 
   function applyTheme(theme) {
-    const themes = ["dark", "contrast", "bright", "neon", "paper"];
-    themes.forEach(t => document.body.classList.remove("theme-" + t));
+    const classes = ["classic","neon","neonpink","bright","paper"];
+    classes.forEach(t => document.body.classList.remove("theme-" + t));
     document.body.classList.add("theme-" + theme);
   }
 
-  function indexToRC(index) {
-    return { row: Math.floor(index / 9), col: index % 9 };
+  const savedTheme = localStorage.getItem("sudokuThemeV1");
+  if (savedTheme) {
+    currentTheme = savedTheme;
+    themeSelect.value = savedTheme;
+    applyTheme(savedTheme);
+  } else {
+    applyTheme(currentTheme);
   }
 
-  function rcToIndex(row, col) {
-    return row * 9 + col;
+  themeSelect.addEventListener("change", () => {
+    currentTheme = themeSelect.value;
+    applyTheme(currentTheme);
+    saveState();
+  });
+
+  /* UTILS */
+
+  function indexToRC(i) {
+    return { row: Math.floor(i / 9), col: i % 9 };
   }
 
-  function loadRandomPuzzle(diff) {
-    const arr = PUZZLES[diff];
-    const puzzle = arr[Math.floor(Math.random() * arr.length)];
-    board = new Array(81).fill(0);
-    given = new Array(81).fill(false);
-    notes = Array.from({ length: 81 }, () => new Set());
+  function rcToIndex(r, c) {
+    return r * 9 + c;
+  }
+
+  function puzzleStringToBoard(str) {
+    const b = new Array(81).fill(0);
     for (let i = 0; i < 81; i++) {
-      const c = puzzle[i];
-      if (c && c !== "0" && c !== ".") {
-        board[i] = parseInt(c, 10);
-        given[i] = true;
+      const c = str[i] || "0";
+      b[i] = (c === "0" || c === ".") ? 0 : parseInt(c, 10);
+    }
+    return b;
+  }
+
+  function cloneBoard(b) {
+    return b.slice();
+  }
+
+  function isValidValue(b, index, value) {
+    if (value === 0) return true;
+    const { row, col } = indexToRC(index);
+
+    // row
+    for (let c = 0; c < 9; c++) {
+      const idx = rcToIndex(row, c);
+      if (idx !== index && b[idx] === value) return false;
+    }
+    // col
+    for (let r = 0; r < 9; r++) {
+      const idx = rcToIndex(r, col);
+      if (idx !== index && b[idx] === value) return false;
+    }
+    // box
+    const boxRow = Math.floor(row / 3) * 3;
+    const boxCol = Math.floor(col / 3) * 3;
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 3; c++) {
+        const idx = rcToIndex(boxRow + r, boxCol + c);
+        if (idx !== index && b[idx] === value) return false;
       }
     }
-    selectedIndex = null;
-    notesMode = false;
-    notesBtn.classList.remove("toggled");
-    hidePopupPad();
-    startTimer();
-    statusText.textContent = "In progress";
-    saveState();
-    render();
+    return true;
   }
+
+  function isValidPlacement(index, value) {
+    return isValidValue(board, index, value);
+  }
+
+  /* SOLVER (for Check / Hints, and later "no mistakes" mode if you want) */
+
+  function solveSudoku(initialBoard) {
+    const b = cloneBoard(initialBoard);
+
+    function findEmpty() {
+      for (let i = 0; i < 81; i++) {
+        if (b[i] === 0) return i;
+      }
+      return -1;
+    }
+
+    function solveRec() {
+      const idx = findEmpty();
+      if (idx === -1) return true;
+
+      for (let num = 1; num <= 9; num++) {
+        if (isValidValue(b, idx, num)) {
+          b[idx] = num;
+          if (solveRec()) return true;
+          b[idx] = 0;
+        }
+      }
+      return false;
+    }
+
+    if (solveRec()) return b;
+    return null;
+  }
+
+  /* TIMER */
 
   function startTimer() {
     startTime = Date.now();
@@ -683,33 +742,91 @@
     timerEl.textContent = m + ":" + s;
   }
 
-  function isValidPlacement(index, value) {
-    if (value === 0) return true;
-    const { row, col } = indexToRC(index);
-    // row
-    for (let c = 0; c < 9; c++) {
-      const idx = rcToIndex(row, c);
-      if (idx !== index && board[idx] === value) return false;
-    }
-    // col
-    for (let r = 0; r < 9; r++) {
-      const idx = rcToIndex(r, col);
-      if (idx !== index && board[idx] === value) return false;
-    }
-    // box
-    const boxRow = Math.floor(row / 3) * 3;
-    const boxCol = Math.floor(col / 3) * 3;
-    for (let r = 0; r < 3; r++) {
-      for (let c = 0; c < 3; c++) {
-        const idx = rcToIndex(boxRow + r, boxCol + c);
-        if (idx !== index && board[idx] === value) return false;
-      }
-    }
-    return true;
+  /* STATE LOAD/SAVE */
+
+  function saveState() {
+    try {
+      const state = {
+        board,
+        given,
+        notes: notes.map(s => Array.from(s)),
+        difficulty: currentDifficulty,
+        theme: currentTheme,
+        puzzle: currentPuzzleStr,
+        startTime
+      };
+      localStorage.setItem("sudokuStateMain", JSON.stringify(state));
+      localStorage.setItem("sudokuThemeV1", currentTheme);
+    } catch (e) {}
   }
 
-  function findConflicts() {
+  function loadState() {
+    try {
+      const raw = localStorage.getItem("sudokuStateMain");
+      if (!raw) return false;
+      const state = JSON.parse(raw);
+      board = state.board || board;
+      given = state.given || given;
+      notes = (state.notes || []).map(arr => new Set(arr));
+      currentDifficulty = state.difficulty || "easy";
+      currentPuzzleStr = state.puzzle || null;
+      currentTheme = state.theme || "neon";
+
+      difficultyEl.value = currentDifficulty;
+      themeSelect.value = currentTheme;
+      applyTheme(currentTheme);
+
+      if (currentPuzzleStr) {
+        const base = puzzleStringToBoard(currentPuzzleStr);
+        solution = solveSudoku(base);
+      }
+
+      if (state.startTime) {
+        startTime = state.startTime;
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(updateTimer, 1000);
+        updateTimer();
+      }
+
+      statusText.textContent = "Resumed game";
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /* PUZZLE INIT */
+
+  function loadRandomPuzzle(diff) {
+    const arr = PUZZLES[diff];
+    const puzzle = arr[Math.floor(Math.random() * arr.length)];
+    currentPuzzleStr = puzzle;
+
+    const base = puzzleStringToBoard(puzzle);
+    board = cloneBoard(base);
+    given = new Array(81).fill(false);
+    notes = Array.from({ length: 81 }, () => new Set());
+
+    for (let i = 0; i < 81; i++) {
+      if (base[i] !== 0) given[i] = true;
+    }
+
+    solution = solveSudoku(base);
+    selectedIndex = null;
+    notesMode = false;
+    notesBtn.classList.remove("toggled");
+    hidePopupPad();
+    startTimer();
+    statusText.textContent = "In progress";
+    saveState();
+    render();
+  }
+
+  /* LOGIC HELPERS */
+
+  function findRuleConflicts() {
     const conflicts = new Set();
+
     // rows
     for (let r = 0; r < 9; r++) {
       const seen = {};
@@ -725,6 +842,7 @@
         }
       }
     }
+
     // cols
     for (let c = 0; c < 9; c++) {
       const seen = {};
@@ -740,6 +858,7 @@
         }
       }
     }
+
     // boxes
     for (let br = 0; br < 3; br++) {
       for (let bc = 0; bc < 3; bc++) {
@@ -759,205 +878,43 @@
         }
       }
     }
+
     return conflicts;
   }
 
-  function isSolved() {
-    for (let i = 0; i < 81; i++) {
-      if (board[i] === 0) return false;
-    }
-    const conflicts = findConflicts();
-    return conflicts.size === 0;
-  }
-
-  function computeCandidates(index) {
-    if (board[index] !== 0) return new Set();
-    const all = new Set([1,2,3,4,5,6,7,8,9]);
+  function clearDigitFromPeers(index, digit) {
     const { row, col } = indexToRC(index);
+
+    // row
     for (let c = 0; c < 9; c++) {
-      const v = board[rcToIndex(row, c)];
-      all.delete(v);
+      const idx = rcToIndex(row, c);
+      if (idx !== index) notes[idx].delete(digit);
     }
+    // col
     for (let r = 0; r < 9; r++) {
-      const v = board[rcToIndex(r, col)];
-      all.delete(v);
+      const idx = rcToIndex(r, col);
+      if (idx !== index) notes[idx].delete(digit);
     }
+    // box
     const boxRow = Math.floor(row / 3) * 3;
     const boxCol = Math.floor(col / 3) * 3;
     for (let r = 0; r < 3; r++) {
       for (let c = 0; c < 3; c++) {
-        const v = board[rcToIndex(boxRow + r, boxCol + c)];
-        all.delete(v);
+        const idx = rcToIndex(boxRow + r, boxCol + c);
+        if (idx !== index) notes[idx].delete(digit);
       }
     }
-    return all;
   }
 
-  function handleCellTap(index, evt) {
-    selectedIndex = index;
-    const isBlankEditable = !given[index] && board[index] === 0;
-    render();
-    if (isBlankEditable && !notesMode && evt && evt.currentTarget) {
-      showPopupPad(evt.currentTarget);
-    } else {
-      hidePopupPad();
-    }
-  }
-
-  function handleNumberTap(num) {
-  if (selectedIndex === null) return;
-  if (given[selectedIndex]) return;
-
-  const idx = selectedIndex;
-
-  if (notesMode) {
-    // NOTES MODE – toggle pencil marks, don’t place a final value
-    const set = notes[idx];
-    if (set.has(num)) {
-      set.delete(num);
-    } else {
-      set.add(num);
-    }
-    board[idx] = 0;
-    statusText.textContent = "Notes updated";
-  } else {
-    // NORMAL MODE – only allow move if it doesn’t break Sudoku rules
-    const previous = board[idx];
-    board[idx] = num;
-
-    // if this placement breaks row/col/box rules, revert it
-    if (!isValidPlacement(idx, num)) {
-      board[idx] = previous;
-      statusText.textContent = "That number conflicts with row, column or box.";
-      // optional: briefly show conflicts
-      const conflicts = findConflicts();
-      render(conflicts);
-      return;
-    }
-
-    // move is valid – clear notes in this cell
-    notes[idx].clear();
-    statusText.textContent = "In progress";
-
-    // if you want, we can also auto-clear this number from notes
-    // in the same row/col/box in a later step
-  }
-
-  hideCellPicker();
-  saveState();
-  render();
-}
-
-  function handleErase() {
-    if (selectedIndex === null) return;
-    if (given[selectedIndex]) return;
-    board[selectedIndex] = 0;
-    notes[selectedIndex].clear();
-    statusText.textContent = "In progress";
-    hidePopupPad();
-    saveState();
-    render();
-  }
-
-  function handleCheck() {
-    const conflicts = findConflicts();
-    if (conflicts.size === 0) {
-      statusText.textContent = "No conflicts so far ✅";
-    } else {
-      statusText.textContent = `Conflicts found in ${conflicts.size} cell(s) ❗`;
-    }
-    render(conflicts);
-  }
-
-  function handleHint() {
-    if (selectedIndex === null || given[selectedIndex]) return;
-    if (board[selectedIndex] !== 0) return;
-    const cands = computeCandidates(selectedIndex);
-    if (cands.size === 1) {
-      const val = Array.from(cands)[0];
-      board[selectedIndex] = val;
-      notes[selectedIndex].clear();
-      statusText.textContent = "Logical hint applied 💡";
-      if (isSolved()) {
-        statusText.textContent = "Completed 🎉";
-        if (timerInterval) clearInterval(timerInterval);
-      }
-      saveState();
-      render();
-    } else {
-      statusText.textContent = "Try pencil marks first – no single candidate yet.";
-    }
-  }
-
-  function toggleNotesMode() {
-    notesMode = !notesMode;
-    notesBtn.classList.toggle("toggled", notesMode);
-    hidePopupPad();
-    render(); // so number pad visibility updates
-  }
-
-  function clearNotes() {
-    if (selectedIndex === null) return;
-    notes[selectedIndex].clear();
-    saveState();
-    render();
-  }
-
-  function saveState() {
-    try {
-      const state = {
-        board,
-        given,
-        notes: notes.map(s => Array.from(s)),
-        difficulty: currentDifficulty,
-        theme: currentTheme,
-        startTime,
-        timestamp: Date.now()
-      };
-      localStorage.setItem("sudokuStateV2", JSON.stringify(state));
-    } catch (e) {
-      // ignore
-    }
-  }
-
-  function loadState() {
-    try {
-      const raw = localStorage.getItem("sudokuStateV2");
-      if (!raw) return false;
-      const state = JSON.parse(raw);
-      board = state.board || board;
-      given = state.given || given;
-      notes = (state.notes || []).map(arr => new Set(arr));
-      currentDifficulty = state.difficulty || "medium";
-      currentTheme = state.theme || "dark";
-      difficultyEl.value = currentDifficulty;
-      themeSelect.value = currentTheme;
-      applyTheme(currentTheme);
-      startTime = state.startTime ? state.startTime : Date.now();
-      if (timerInterval) clearInterval(timerInterval);
-      timerInterval = setInterval(updateTimer, 1000);
-      updateTimer();
-      statusText.textContent = "Resumed game";
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  function updatePadVisibility() {
-    const counts = Array(10).fill(0);
+  function isSolvedCompletely() {
     for (let i = 0; i < 81; i++) {
-      if (board[i]) counts[board[i]]++;
+      if (board[i] === 0) return false;
     }
-    document.querySelectorAll(".pad-btn[data-num]").forEach(btn => {
-      const num = parseInt(btn.dataset.num, 10);
-      if (!notesMode && counts[num] >= 9) {
-        btn.classList.add("hidden-num");
-      } else {
-        btn.classList.remove("hidden-num");
-      }
-    });
+    const conflicts = findRuleConflicts();
+    return conflicts.size === 0 && (!solution || board.every((v, i) => v === solution[i]));
   }
+
+  /* POPUP PAD */
 
   function hidePopupPad() {
     popupPad.classList.add("hidden");
@@ -973,9 +930,161 @@
     popupPad.classList.remove("hidden");
   }
 
+  gridEl.addEventListener("click", (e) => {
+    if (!popupPad.contains(e.target) && !e.target.classList.contains("cell")) {
+      hidePopupPad();
+    }
+  });
+
+  /* INPUT HANDLERS */
+
+  function handleCellTap(index, cellEl) {
+    selectedIndex = index;
+    const editableBlank = !given[index] && board[index] === 0;
+    render();
+    if (editableBlank && !notesMode && cellEl) {
+      showPopupPad(cellEl);
+    } else {
+      hidePopupPad();
+    }
+  }
+
+  function handleNumberTap(num) {
+    if (selectedIndex === null) return;
+    if (given[selectedIndex]) return;
+
+    const idx = selectedIndex;
+
+    if (notesMode) {
+      // NOTES MODE – pencil marks only
+      const set = notes[idx];
+      if (set.has(num)) set.delete(num);
+      else set.add(num);
+      board[idx] = 0;
+      statusText.textContent = "Notes updated";
+      hidePopupPad();
+      saveState();
+      render();
+      return;
+    }
+
+    // NORMAL MODE – block illegal moves instantly
+    const previous = board[idx];
+    board[idx] = num;
+
+    if (!isValidPlacement(idx, num)) {
+      board[idx] = previous;
+      statusText.textContent = "That breaks row / column / box.";
+      const conflicts = findRuleConflicts();
+      render(conflicts);
+      return;
+    }
+
+    // Optional: solution-aware "no mistakes" mode.
+    // Right now we just allow any rule-valid move.
+    // If later you want strict solution checking, we can add:
+    // if (solution && solution[idx] !== num) { ... }
+
+    notes[idx].clear();
+    clearDigitFromPeers(idx, num);
+
+    if (isSolvedCompletely()) {
+      statusText.textContent = "Completed 🎉";
+      if (timerInterval) clearInterval(timerInterval);
+    } else {
+      statusText.textContent = "In progress";
+    }
+
+    hidePopupPad();
+    saveState();
+    render();
+  }
+
+  function handleErase() {
+    if (selectedIndex === null) return;
+    if (given[selectedIndex]) return;
+    board[selectedIndex] = 0;
+    notes[selectedIndex].clear();
+    statusText.textContent = "In progress";
+    hidePopupPad();
+    saveState();
+    render();
+  }
+
+  function handleCheck() {
+    const ruleConflicts = findRuleConflicts();
+    const allConflicts = new Set(ruleConflicts);
+
+    if (solution) {
+      for (let i = 0; i < 81; i++) {
+        if (board[i] !== 0 && board[i] !== solution[i]) {
+          allConflicts.add(i);
+        }
+      }
+    }
+
+    if (allConflicts.size === 0) {
+      statusText.textContent = "No conflicts so far ✅";
+    } else {
+      statusText.textContent = `${allConflicts.size} issue(s) found ❗`;
+    }
+    render(allConflicts);
+  }
+
+  function handleHint() {
+    if (selectedIndex === null || given[selectedIndex]) return;
+    if (board[selectedIndex] !== 0) return;
+
+    if (solution) {
+      board[selectedIndex] = solution[selectedIndex];
+      notes[selectedIndex].clear();
+      clearDigitFromPeers(selectedIndex, board[selectedIndex]);
+      statusText.textContent = "Hint applied 💡";
+      if (isSolvedCompletely()) {
+        statusText.textContent = "Completed 🎉";
+        if (timerInterval) clearInterval(timerInterval);
+      }
+      saveState();
+      render();
+      return;
+    }
+  }
+
+  function toggleNotesMode() {
+    notesMode = !notesMode;
+    notesBtn.classList.toggle("toggled", notesMode);
+    hidePopupPad();
+    render();
+  }
+
+  function clearNotes() {
+    if (selectedIndex === null) return;
+    notes[selectedIndex].clear();
+    saveState();
+    render();
+  }
+
+  /* RENDERING */
+
+  function updatePadVisibility() {
+    const counts = Array(10).fill(0);
+    for (let i = 0; i < 81; i++) {
+      const v = board[i];
+      if (v) counts[v]++;
+    }
+    padButtons.forEach(btn => {
+      const num = parseInt(btn.dataset.num, 10);
+      if (!notesMode && counts[num] >= 9) {
+        btn.classList.add("hidden-num");
+      } else {
+        btn.classList.remove("hidden-num");
+      }
+    });
+  }
+
   function render(conflictsOverride) {
     gridEl.innerHTML = "";
-    const conflicts = conflictsOverride || findConflicts();
+    const conflicts = conflictsOverride || findRuleConflicts();
     const selectedVal = selectedIndex !== null ? board[selectedIndex] : null;
 
     for (let i = 0; i < 81; i++) {
@@ -994,7 +1103,6 @@
         cell.classList.add("empty");
       }
 
-      // text or notes
       if (board[i] !== 0) {
         inner.textContent = board[i];
       } else if (notes[i].size > 0) {
@@ -1018,12 +1126,13 @@
         inner.textContent = "";
       }
 
-      // highlight selected / related
       if (i === selectedIndex) {
         cell.classList.add("selected");
       } else if (selectedIndex !== null) {
         const { row: sr, col: sc } = indexToRC(selectedIndex);
-        if (row === sr || col === sc || (Math.floor(row / 3) === Math.floor(sr / 3) && Math.floor(col / 3) === Math.floor(sc / 3))) {
+        if (row === sr || col === sc ||
+            (Math.floor(row / 3) === Math.floor(sr / 3) &&
+             Math.floor(col / 3) === Math.floor(sc / 3))) {
           cell.classList.add("related");
         }
       }
@@ -1036,7 +1145,7 @@
         cell.classList.add("conflict");
       }
 
-      cell.addEventListener("click", (evt) => handleCellTap(i, evt));
+      cell.addEventListener("click", (evt) => handleCellTap(i, evt.currentTarget));
       cell.appendChild(inner);
       gridEl.appendChild(cell);
     }
@@ -1044,29 +1153,24 @@
     updatePadVisibility();
   }
 
-  // Event wiring
+  /* EVENTS */
+
   difficultyEl.addEventListener("change", () => {
     currentDifficulty = difficultyEl.value;
-  });
-
-  themeSelect.addEventListener("change", () => {
-    currentTheme = themeSelect.value;
-    applyTheme(currentTheme);
-    saveState();
   });
 
   newGameBtn.addEventListener("click", () => {
     loadRandomPuzzle(currentDifficulty);
   });
 
-  document.querySelectorAll(".pad-btn[data-num]").forEach(btn => {
+  padButtons.forEach(btn => {
     btn.addEventListener("click", () => {
       const num = parseInt(btn.dataset.num, 10);
       handleNumberTap(num);
     });
   });
 
-  document.querySelectorAll("#popupPad .popup-btn").forEach(btn => {
+  popupPad.querySelectorAll(".popup-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const num = parseInt(btn.dataset.num, 10);
       handleNumberTap(num);
@@ -1079,8 +1183,8 @@
   checkBtn.addEventListener("click", handleCheck);
   hintBtn.addEventListener("click", handleHint);
 
-  // Init
-  applyTheme(currentTheme);
+  /* INIT */
+
   if (!loadState()) {
     loadRandomPuzzle(currentDifficulty);
   } else {

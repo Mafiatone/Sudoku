@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Sudoku – Ad-free by Mafiatone</title>
+  <title>Sudoku – Ad-free</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root {
@@ -575,7 +575,7 @@
     <div class="footer-row">
       <div>
         <span>Progress is saved locally.</span>
-        <span class="version">v0.43</span>
+        <span class="version">v0.44</span>
       </div>
       <div class="link" id="statsLink">Stats</div>
     </div>
@@ -638,8 +638,8 @@
       ]
     };
 
-    const STORAGE_KEY_STATE = "sudoku_v042_state";
-    const STORAGE_KEY_STATS = "sudoku_v042_stats";
+    const STORAGE_KEY_STATE = "sudoku_v044_state";
+    const STORAGE_KEY_STATS = "sudoku_v042_stats"; // keep stats key same so you don't lose history
 
     const gridEl = document.getElementById("grid");
     const difficultySelect = document.getElementById("difficulty");
@@ -671,6 +671,7 @@
     let givens = [];
     let notes = [];
     let solution = [];
+    let errors = [];   // NEW: boolean grid of errors
     let selectedCell = null;
     let notesMode = false;
     let timerId = null;
@@ -754,6 +755,15 @@
       }
     }
 
+    function initErrorGrid() {
+      errors = [];
+      for (let r=0;r<9;r++) {
+        const row = [];
+        for (let c=0;c<9;c++) row.push(false);
+        errors.push(row);
+      }
+    }
+
     function loadPuzzleFromString(str) {
       const chars = Array.from(str.replace(/[^0-9.]/g,""));
       if (chars.length !== 81) throw new Error("Bad puzzle length");
@@ -775,6 +785,7 @@
       const solved = solveSudoku(board);
       if (!solved) throw new Error("Puzzle unsolvable");
       solution = solved;
+      initErrorGrid();
     }
 
     function applyBoardToUI() {
@@ -791,6 +802,9 @@
           } else if (notes[r][c].size) {
             cell.classList.add("note");
             inner.textContent = [...notes[r][c]].sort().join(" ");
+          }
+          if (errors[r][c]) {
+            cell.classList.add("cell-error");
           }
         }
       }
@@ -862,6 +876,33 @@
       }
     }
 
+    function recomputeErrors(countNewErrors=false, lastR=null, lastC=null) {
+      let anyError = false;
+      for (let r=0;r<9;r++) {
+        for (let c=0;c<9;c++) {
+          const prev = errors[r][c];
+          const v = board[r][c];
+          const isErr = (v !== "0" && solution[r][c] !== v);
+          errors[r][c] = isErr;
+          if (isErr) {
+            anyError = true;
+            if (countNewErrors && !prev && r===lastR && c===lastC) {
+              errorCount++;
+            }
+          }
+        }
+      }
+      applyBoardToUI();
+      if (anyError) {
+        statusMessageEl.textContent = "That breaks row / column / box.";
+        statusDotEl.style.background = "#fbbf24";
+      } else {
+        statusMessageEl.textContent = "In progress";
+        statusDotEl.style.background = "#22c55e";
+      }
+      return anyError;
+    }
+
     function handleNumberInput(num) {
       if (!selectedCell) return;
       const r = Number(selectedCell.dataset.row);
@@ -874,20 +915,16 @@
         const set = notes[r][c];
         if (set.has(num)) set.delete(num); else set.add(num);
         applyBoardToUI();
-        validateAllCells(false);
+        recomputeErrors(false);
         saveState();
         return;
       }
 
-      // normal entry
       notes[r][c].clear();
       board[r][c] = num;
       autoClearNotes(r,c,num);
 
-      // IMPORTANT: draw board first, then apply error classes
-      applyBoardToUI();
-      validateAllCells(true, r, c);
-
+      recomputeErrors(true, r, c);
       saveState();
       checkCompletion();
     }
@@ -912,8 +949,7 @@
       pushStateToHistory();
       board[r][c] = "0";
       notes[r][c].clear();
-      applyBoardToUI();
-      validateAllCells(false);
+      recomputeErrors(false);
       saveState();
     }
 
@@ -922,45 +958,18 @@
       for (let r=0;r<9;r++)
         for (let c=0;c<9;c++)
           if (!givens[r][c]) notes[r][c].clear();
-      applyBoardToUI();
-      validateAllCells(false);
+      recomputeErrors(false);
       saveState();
     }
 
     function toggleNotesMode() {
       notesMode = !notesMode;
       notesKey.classList.toggle("active", notesMode);
-      updateKeypadVisibility();   // fix: show all digits immediately in notes mode
-    }
-
-    function validateAllCells(countNewErrors=false, lastR=null,lastC=null) {
-      let anyError = false;
-      for (let r=0;r<9;r++) {
-        for (let c=0;c<9;c++) {
-          const cell = cells[r][c];
-          const v = board[r][c];
-          cell.classList.remove("cell-error");
-          if (v !== "0" && solution[r][c] !== v) {
-            cell.classList.add("cell-error");
-            anyError = true;
-            if (countNewErrors && r===lastR && c===lastC) {
-              errorCount++;
-            }
-          }
-        }
-      }
-      if (anyError) {
-        statusMessageEl.textContent = "That breaks row / column / box.";
-        statusDotEl.style.background = "#fbbf24";
-      } else {
-        statusMessageEl.textContent = "In progress";
-        statusDotEl.style.background = "#22c55e";
-      }
-      return anyError;
+      updateKeypadVisibility();   // ensure all digits available in notes mode
     }
 
     function handleCheck() {
-      const hasErrors = validateAllCells(false);
+      const hasErrors = recomputeErrors(false);
       if (!hasErrors) {
         statusMessageEl.textContent = "No issues so far.";
         statusDotEl.style.background = "#22c55e";
@@ -971,6 +980,7 @@
       const snapshot = {
         board: board.map(r => r.slice()),
         notes: notes.map(row => row.map(set => new Set(set))),
+        errors: errors.map(r => r.slice()),
         elapsedSeconds,
         errorCount,
         hintCount
@@ -984,13 +994,14 @@
       if (!snap) return;
       board = snap.board.map(r => r.slice());
       notes = snap.notes.map(row => row.map(set => new Set(set)));
+      errors = snap.errors.map(r => r.slice());
       elapsedSeconds = snap.elapsedSeconds;
       errorCount = snap.errorCount;
       hintCount = snap.hintCount;
       timerEl.textContent = timeToString(elapsedSeconds);
       startTimestamp = Date.now() - elapsedSeconds*1000;
       applyBoardToUI();
-      validateAllCells(false);
+      recomputeErrors(false);
       saveState();
     }
 
@@ -1008,8 +1019,7 @@
       notes[r][c].clear();
       autoClearNotes(r,c,correct);
       hintCount++;
-      applyBoardToUI();
-      validateAllCells(false);
+      recomputeErrors(false);
       saveState();
       checkCompletion();
     }
@@ -1032,7 +1042,7 @@
         updateKeypadVisibility();
         return;
       }
-      validateAllCells(false);
+      recomputeErrors(false);
       if (!allCellsCorrect()) {
         statusMessageEl.textContent = "Board full, but with mistakes.";
         statusDotEl.style.background = "#f97316";
@@ -1057,7 +1067,7 @@
       for (let r=0;r<9;r++)
         for (let c=0;c<9;c++) {
           const v = board[r][c];
-          if (v !== "0" && solution[r][c] === v) counts[Number(v)]++;
+          if (v !== "0" && !errors[r][c]) counts[Number(v)]++;
         }
       numKeys.forEach(k => {
         const n = Number(k.dataset.num);
@@ -1098,6 +1108,7 @@
       setTimeout(() => { animOverlay.innerHTML = ""; }, 1500);
     }
 
+    // --- Stats (unchanged from last version) ---
     function loadStats() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY_STATS);
@@ -1203,6 +1214,7 @@
         givens,
         notes: notes.map(row => row.map(set => [...set])),
         solution,
+        errors,
         elapsedSeconds,
         startTimestamp: completed ? null : Date.now(),
         errorCount,
@@ -1231,13 +1243,14 @@
         givens = state.givens;
         notes = state.notes.map(row => row.map(arr => new Set(arr)));
         solution = state.solution;
+        errors = state.errors || (initErrorGrid(), errors);
         elapsedSeconds = state.elapsedSeconds || 0;
         errorCount = state.errorCount || 0;
         hintCount = state.hintCount || 0;
         undoStack = [];
 
         applyBoardToUI();
-        validateAllCells(false);
+        recomputeErrors(false);
         timerEl.textContent = timeToString(elapsedSeconds);
 
         if (!state.completed && state.startTimestamp) {

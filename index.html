@@ -287,6 +287,7 @@
       background: radial-gradient(circle at top, var(--card), #030712);
       box-shadow: inset 0 0 0 1px rgba(75, 85, 99, 0.3);
       position: relative;
+      overflow: hidden;
     }
 
     body.theme-bright .grid-wrap,
@@ -421,6 +422,79 @@
 
     .popup-btn:active {
       transform: translateY(1px);
+    }
+
+    /* COMPLETION ANIMATION */
+
+    .anim-overlay {
+      position: absolute;
+      inset: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 6;
+    }
+
+    .anim-tree, .anim-smiley, .anim-star {
+      font-size: 64px;
+      text-shadow: 0 0 12px rgba(250, 250, 250, 0.7);
+      animation: popIn 1.3s ease-out forwards;
+    }
+
+    .anim-smiley-text {
+      margin-top: 8px;
+      font-size: 16px;
+      color: var(--accent);
+      text-align: center;
+      animation: fadeUp 1s ease-out forwards;
+    }
+
+    .anim-star span {
+      display: inline-block;
+      font-size: 40px;
+      margin: 0 4px;
+      animation: sparkle 1.4s ease-out infinite;
+    }
+
+    .anim-confetti {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .anim-confetti-piece {
+      position: absolute;
+      width: 6px;
+      height: 12px;
+      border-radius: 999px;
+      opacity: 0;
+      animation: confettiFall 1.4s ease-out forwards;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.4); opacity: 0; }
+      40% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); opacity: 0; }
+    }
+
+    @keyframes fadeUp {
+      0% { transform: translateY(6px); opacity: 0; }
+      40% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(-4px); opacity: 0; }
+    }
+
+    @keyframes confettiFall {
+      0% { transform: translateY(-60px); opacity: 0; }
+      20% { opacity: 1; }
+      100% { transform: translateY(80px); opacity: 0; }
+    }
+
+    @keyframes sparkle {
+      0% { transform: scale(0); opacity: 0; }
+      50% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(0); opacity: 0; }
     }
 
     /* PAD */
@@ -644,6 +718,15 @@
           <option value="paper">Paper</option>
         </select>
       </div>
+      <div class="select-wrap">
+        <select id="animSelect">
+          <option value="confetti">Confetti</option>
+          <option value="tree">Christmas Tree</option>
+          <option value="smiley">Smiley</option>
+          <option value="star">Starburst</option>
+          <option value="none">No Animation</option>
+        </select>
+      </div>
       <button id="newGameBtn" class="btn-pill">New Puzzle</button>
     </div>
 
@@ -670,6 +753,9 @@
         <button class="popup-btn" data-num="8">8</button>
         <button class="popup-btn" data-num="9">9</button>
       </div>
+
+      <!-- completion animation overlay -->
+      <div id="animationOverlay" class="anim-overlay hidden"></div>
     </div>
 
     <div class="pad">
@@ -773,6 +859,7 @@
 
   let currentDifficulty = "easy";
   let currentTheme = "neon";
+  let currentAnimation = "confetti";
   let currentPuzzleStr = null;
   let solution = null;
 
@@ -807,6 +894,7 @@
   const gridEl = document.getElementById("grid");
   const difficultyEl = document.getElementById("difficulty");
   const themeSelect = document.getElementById("themeSelect");
+  const animSelect = document.getElementById("animSelect");
   const newGameBtn = document.getElementById("newGameBtn");
   const statusText = document.getElementById("statusText");
   const timerEl = document.getElementById("timer");
@@ -821,6 +909,7 @@
   const statsLink = document.getElementById("statsLink");
   const statsOverlay = document.getElementById("statsOverlay");
   const closeStatsBtn = document.getElementById("closeStatsBtn");
+  const animationOverlay = document.getElementById("animationOverlay");
 
   /* THEME */
 
@@ -837,10 +926,23 @@
   }
   applyTheme(currentTheme);
 
+  const storedAnim = localStorage.getItem("sudokuAnimMain");
+  if (storedAnim) {
+    currentAnimation = storedAnim;
+    animSelect.value = storedAnim;
+  }
+
   themeSelect.addEventListener("change", () => {
     currentTheme = themeSelect.value;
     applyTheme(currentTheme);
     saveState();
+  });
+
+  animSelect.addEventListener("change", () => {
+    currentAnimation = animSelect.value;
+    try {
+      localStorage.setItem("sudokuAnimMain", currentAnimation);
+    } catch (e) {}
   });
 
   /* UTILS */
@@ -1111,6 +1213,82 @@ Badges – No Hints: ${badges.noHints} · No Errors: ${badges.noErrors} · Perfe
     saveStats();
   }
 
+  /* COMPLETION ANIMATION */
+
+  function playCompletionAnimation() {
+    if (currentAnimation === "none") return;
+    animationOverlay.classList.remove("hidden");
+    animationOverlay.innerHTML = "";
+
+    if (currentAnimation === "tree") {
+      const c = document.createElement("div");
+      c.className = "anim-tree";
+      c.textContent = "🎄";
+      animationOverlay.appendChild(c);
+    } else if (currentAnimation === "smiley") {
+      const wrap = document.createElement("div");
+      wrap.style.display = "flex";
+      wrap.style.flexDirection = "column";
+      wrap.style.alignItems = "center";
+      const face = document.createElement("div");
+      face.className = "anim-smiley";
+      face.textContent = "😊";
+      const text = document.createElement("div");
+      text.className = "anim-smiley-text";
+      text.textContent = "Nice solve!";
+      wrap.appendChild(face);
+      wrap.appendChild(text);
+      animationOverlay.appendChild(wrap);
+    } else if (currentAnimation === "star") {
+      const starWrap = document.createElement("div");
+      starWrap.className = "anim-star";
+      const s1 = document.createElement("span");
+      const s2 = document.createElement("span");
+      const s3 = document.createElement("span");
+      s1.textContent = "⭐";
+      s2.textContent = "🌟";
+      s3.textContent = "⭐";
+      s2.style.animationDelay = "0.2s";
+      s3.style.animationDelay = "0.4s";
+      starWrap.appendChild(s1);
+      starWrap.appendChild(s2);
+      starWrap.appendChild(s3);
+      animationOverlay.appendChild(starWrap);
+    } else if (currentAnimation === "confetti") {
+      const conf = document.createElement("div");
+      conf.className = "anim-confetti";
+      const colors = ["#facc15","#22c55e","#38bdf8","#f97316","#e879f9"];
+      for (let i = 0; i < 40; i++) {
+        const p = document.createElement("div");
+        p.className = "anim-confetti-piece";
+        const left = Math.random() * 100;
+        const delay = Math.random() * 0.4;
+        const dur = 1 + Math.random() * 0.6;
+        p.style.left = left + "%";
+        p.style.top = (Math.random() * 20 - 10) + "%";
+        p.style.backgroundColor = colors[i % colors.length];
+        p.style.animationDuration = dur + "s";
+        p.style.animationDelay = delay + "s";
+        conf.appendChild(p);
+      }
+      animationOverlay.appendChild(conf);
+    }
+
+    setTimeout(() => {
+      animationOverlay.classList.add("hidden");
+      animationOverlay.innerHTML = "";
+    }, 1600);
+  }
+
+  function finishGame() {
+    if (gameFinished) return;
+    gameFinished = true;
+    stopTimer();
+    statusText.textContent = "Completed 🎉";
+    recordGameResult();
+    playCompletionAnimation();
+  }
+
   /* STATE SAVE/LOAD */
 
   function saveState() {
@@ -1371,10 +1549,7 @@ Badges – No Hints: ${badges.noHints} · No Errors: ${badges.noErrors} · Perfe
     errorMarks.delete(idx);
 
     if (isSolvedCompletely()) {
-      gameFinished = true;
-      stopTimer();
-      statusText.textContent = "Completed 🎉";
-      recordGameResult();
+      finishGame();
     } else {
       statusText.textContent = "In progress";
     }
@@ -1437,10 +1612,7 @@ Badges – No Hints: ${badges.noHints} · No Errors: ${badges.noErrors} · Perfe
       currentHints += 1;
       statusText.textContent = "Hint applied 💡";
       if (isSolvedCompletely()) {
-        gameFinished = true;
-        stopTimer();
-        statusText.textContent = "Completed 🎉";
-        recordGameResult();
+        finishGame();
       }
       hidePopupPad();
       saveState();

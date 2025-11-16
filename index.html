@@ -15,6 +15,8 @@
       --text: #e5e7eb;
       --muted: #9ca3af;
       --error: #f97373;
+      --error-bg: #facc15;
+      --error-text-on: #111827;
       --given: #e5e7eb;
       --cell-bg: #020617;
       --cell-selected: #1d4ed8;
@@ -34,6 +36,8 @@
       --text: #e5e7eb;
       --muted: #9ca3af;
       --error: #f97373;
+      --error-bg: #facc15;
+      --error-text-on: #111827;
       --given: #e5e7eb;
       --cell-bg: #020617;
       --cell-selected: #1d4ed8;
@@ -52,6 +56,8 @@
       --text: #e5e7eb;
       --muted: #9ca3af;
       --error: #fb7185;
+      --error-bg: #facc15;
+      --error-text-on: #020617;
       --given: #f9fafb;
       --cell-bg: #020617;
       --cell-selected: #22c55e;
@@ -70,6 +76,8 @@
       --text: #f9fafb;
       --muted: #e5e7eb;
       --error: #fb7185;
+      --error-bg: #facc15;
+      --error-text-on: #111827;
       --given: #fdf2f8;
       --cell-bg: #020617;
       --cell-selected: #ec4899;
@@ -88,6 +96,8 @@
       --text: #111827;
       --muted: #6b7280;
       --error: #b91c1c;
+      --error-bg: #facc15;
+      --error-text-on: #111827;
       --given: #111827;
       --cell-bg: #ffffff;
       --cell-selected: #2563eb;
@@ -106,6 +116,8 @@
       --text: #1f2937;
       --muted: #6b7280;
       --error: #b91c1c;
+      --error-bg: #facc15;
+      --error-text-on: #111827;
       --given: #1f2937;
       --cell-bg: #fffbeb;
       --cell-selected: #f59e0b;
@@ -380,8 +392,9 @@
     }
 
     .cell.conflict {
-      color: var(--error);
-      text-shadow: 0 0 6px rgba(248, 113, 113, 0.6);
+      background: var(--error-bg);
+      color: var(--error-text-on);
+      font-weight: 700;
     }
 
     .cell:active {
@@ -1469,11 +1482,11 @@ Badges – No Hints: ${badges.noHints} · No Errors: ${badges.noErrors} · Perfe
   }
 
   function isSolvedCompletely() {
+    if (!solution) return false;
     for (let i = 0; i < 81; i++) {
-      if (board[i] === 0) return false;
+      if (board[i] !== solution[i]) return false;
     }
-    const conflicts = findRuleConflicts();
-    return conflicts.size === 0 && (!solution || board.every((v, i) => v === solution[i]));
+    return true;
   }
 
   /* POPUP PAD */
@@ -1518,6 +1531,7 @@ Badges – No Hints: ${badges.noHints} · No Errors: ${badges.noErrors} · Perfe
 
     const idx = selectedIndex;
 
+    // NOTES MODE – toggle notes
     if (notesMode) {
       pushHistory();
       const set = notes[idx];
@@ -1532,26 +1546,37 @@ Badges – No Hints: ${badges.noHints} · No Errors: ${badges.noErrors} · Perfe
       return;
     }
 
-    // check legality without changing board
-    if (!isValidPlacement(idx, num)) {
-      currentErrors += 1;
-      statusText.textContent = "That breaks row / column / box.";
-      errorMarks.add(idx);
-      const conflicts = findRuleConflicts();
-      render(conflicts);
-      return;
-    }
-
+    // NUMBER MODE – always place the number, then evaluate it
     pushHistory();
+
     board[idx] = num;
     notes[idx].clear();
-    clearDigitFromPeers(idx, num);
-    errorMarks.delete(idx);
 
-    if (isSolvedCompletely()) {
+    let message = "In progress";
+    let hasError = false;
+
+    // breaks Sudoku rules?
+    if (!isValidPlacement(idx, num)) {
+      hasError = true;
+      message = "That breaks row / column / box.";
+    }
+    // otherwise just wrong vs solution?
+    else if (solution && num !== solution[idx]) {
+      hasError = true;
+      message = "Incorrect number.";
+    }
+
+    if (hasError) {
+      errorMarks.add(idx);
+      currentErrors += 1;
+    } else {
+      errorMarks.delete(idx);
+    }
+
+    if (!hasError && isSolvedCompletely()) {
       finishGame();
     } else {
-      statusText.textContent = "In progress";
+      statusText.textContent = message;
     }
 
     hidePopupPad();

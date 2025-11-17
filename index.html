@@ -25,21 +25,24 @@
       --highlight-number: rgba(251,191,36,0.18);
     }
 
-    /* Themes */
+    /* THEMES – pushed back towards the earlier neon look */
+
     body.theme-neon-green {
-      --accent: #22c55e;
-      --accent-soft: rgba(34,197,94,0.3);
-      --grid-line: #064e3b;
-      --grid-line-bold: #047857;
-      --highlight-number: rgba(34,197,94,0.18);
+      --accent: #22c55e; /* bright green */
+      --accent-soft: rgba(34,197,94,0.40);
+      --grid-line: #16a34a;        /* vivid green grid */
+      --grid-line-bold: #bbf7d0;   /* light neon edges */
+      --highlight-number: rgba(74,222,128,0.28);
     }
+
     body.theme-neon-pink {
-      --accent: #fb37a3;
-      --accent-soft: rgba(251,55,163,0.3);
-      --grid-line: #4a044e;
-      --grid-line-bold: #9d174d;
-      --highlight-number: rgba(251,55,163,0.18);
+      --accent: #fb37a3; /* hot neon pink */
+      --accent-soft: rgba(251,55,163,0.45);
+      --grid-line: #be185d;        /* strong pink grid */
+      --grid-line-bold: #fb7185;   /* neon-ish box borders */
+      --highlight-number: rgba(251,113,133,0.30);
     }
+
     body.theme-high-contrast {
       --bg: #000000;
       --bg-card: #030712;
@@ -52,12 +55,13 @@
       --grid-line-bold: #e5e7eb;
       --highlight-number: rgba(249,115,22,0.2);
     }
+
     body.theme-christmas {
       --accent: #22c55e;
-      --accent-soft: rgba(34,197,94,0.3);
+      --accent-soft: rgba(34,197,94,0.40);
       --grid-line: #14532d;
       --grid-line-bold: #b91c1c;
-      --highlight-number: rgba(220,38,38,0.24);
+      --highlight-number: rgba(220,38,38,0.32);
     }
 
     * {
@@ -159,14 +163,18 @@
       border-radius: 999px;
       border: none;
       cursor: pointer;
-      background: radial-gradient(circle at 30% 0, #fed7aa 0, var(--accent) 40%, #b45309 100%);
+      /* neon-ish gradient, tinted by --accent per theme */
+      background: radial-gradient(circle at 30% 0,
+        #fee2e2 0,
+        var(--accent) 40%,
+        #a855f7 100%);
       color: #111827;
       font-weight: 600;
       font-size: 12px;
       box-shadow:
         0 0 0 1px rgba(15,23,42,0.8),
         0 10px 30px rgba(0,0,0,0.9),
-        0 0 16px rgba(251,191,36,0.7);
+        0 0 16px var(--accent-soft);
       white-space: nowrap;
     }
 
@@ -292,7 +300,6 @@
       font-weight: 500;
     }
 
-    /* Bold 3x3 lines */
     .cell.border-right-bold {
       border-right: 2px solid var(--grid-line-bold);
     }
@@ -326,7 +333,10 @@
     }
 
     .key-primary {
-      background: radial-gradient(circle at 30% 0, #fed7aa 0, var(--accent) 45%, #b45309 100%);
+      background: radial-gradient(circle at 30% 0,
+        #fed7aa 0,
+        var(--accent) 45%,
+        #ec4899 100%);
       color: #111827;
       font-weight: 700;
     }
@@ -340,7 +350,7 @@
     .key-toggle.active {
       border-color: var(--accent);
       box-shadow:
-        0 0 0 1px rgba(251,191,36,0.7),
+        0 0 0 1px var(--accent-soft),
         0 10px 25px rgba(0,0,0,0.9),
         inset 0 0 0 1px rgba(0,0,0,0.8);
     }
@@ -575,7 +585,7 @@
     <div class="footer-row">
       <div>
         <span>Progress is saved locally.</span>
-        <span class="version">v0.44</span>
+        <span class="version">v0.45</span>
       </div>
       <div class="link" id="statsLink">Stats</div>
     </div>
@@ -612,21 +622,31 @@
   </div>
 
   <script>
-    // --- Puzzle bank ---
+    /* --- Puzzle bank, rebalanced --- */
     const PUZZLES = {
+      // Friendlier set – used for BOTH Easy and Medium
       easy: [
         "003020600900305001001806400008102900700000008006708200002609500800203009005010300",
         "200080300060070084030500209000105408000000000402706000301007040720040060004010003",
         "000000907000420180000705026100904000050000040000507009920108000034059000507000000",
         "000000012000006003504007000008000600090020040001000200000700904800600000630000000"
       ],
+
+      // Medium now just shares the easy pool for a gentler experience.
       medium: [
+        "003020600900305001001806400008102900700000008006708200002609500800203009005010300",
+        "200080300060070084030500209000105408000000000402706000301007040720040060004010003",
+        "000000907000420180000705026100904000050000040000507009920108000034059000507000000",
+        "000000012000006003504007000008000600090020040001000200000700904800600000630000000"
+      ],
+
+      // All the spicy ones (old medium + hard) live here now
+      hard: [
         ".....6....59.....82....8....45........3........6..3.54...325..6..................",
         "8..6..9.5.............2.31...7318.6.24.....73...........279.1..5...8..36..3......",
         ".....1.7..3.5...2....9.4.....8......6.4.3.7..5....8....6..2....7..8.5.....9...3..",
-        "000260701680070090190004500820100040004602900050003028009300074040050036703018000"
-      ],
-      hard: [
+        "000260701680070090190004500820100040004602900050003028009300074040050036703018000",
+
         "4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......",
         "52...6.........7.13...........4..8..6......5...........418.........3..2...87.....",
         "6.....8.3.4.7.................5.4.7.3..2.....1.6.......2.....5.....8.6......1....",
@@ -638,8 +658,8 @@
       ]
     };
 
-    const STORAGE_KEY_STATE = "sudoku_v044_state";
-    const STORAGE_KEY_STATS = "sudoku_v042_stats"; // keep stats key same so you don't lose history
+    const STORAGE_KEY_STATE = "sudoku_v045_state";
+    const STORAGE_KEY_STATS = "sudoku_v042_stats"; // keep stats
 
     const gridEl = document.getElementById("grid");
     const difficultySelect = document.getElementById("difficulty");
@@ -671,7 +691,7 @@
     let givens = [];
     let notes = [];
     let solution = [];
-    let errors = [];   // NEW: boolean grid of errors
+    let errors = [];
     let selectedCell = null;
     let notesMode = false;
     let timerId = null;
@@ -688,12 +708,11 @@
       const s = sec % 60;
       return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
     }
-
     function randChoice(arr) {
       return arr[Math.floor(Math.random() * arr.length)];
     }
 
-    // solver helpers
+    // Solver helpers
     function cloneBoard(b) { return b.map(row => row.slice()); }
     function findEmpty(b) {
       for (let r = 0; r < 9; r++)
@@ -794,7 +813,10 @@
           const cell = cells[r][c];
           const inner = cell.firstChild;
           const v = board[r][c];
-          cell.classList.remove("given","note","selected","related","same-number","cell-error");
+          cell.className = cell.className.split(" ")[0]; // reset but keep base .cell
+          if (c===2 || c===5) cell.classList.add("border-right-bold");
+          if (r===2 || r===5) cell.classList.add("border-bottom-bold");
+
           inner.textContent = "";
           if (givens[r][c]) cell.classList.add("given");
           if (v !== "0") {
@@ -816,7 +838,8 @@
       if (fromUserClick) pushStateToHistory();
       const diff = difficultySelect.value;
       currentDifficulty = diff;
-      const puzzleStr = randChoice(PUZZLES[diff]);
+      const pool = PUZZLES[diff] || PUZZLES.easy;
+      const puzzleStr = randChoice(pool);
       loadPuzzleFromString(puzzleStr);
       selectedCell = null;
       notesMode = false;
@@ -965,7 +988,7 @@
     function toggleNotesMode() {
       notesMode = !notesMode;
       notesKey.classList.toggle("active", notesMode);
-      updateKeypadVisibility();   // ensure all digits available in notes mode
+      updateKeypadVisibility();
     }
 
     function handleCheck() {
@@ -1076,6 +1099,7 @@
       });
     }
 
+    /* Completion animations (unchanged) */
     function playCompletionAnimation() {
       const mode = animSelect.value;
       if (mode === "off") return;
@@ -1108,7 +1132,7 @@
       setTimeout(() => { animOverlay.innerHTML = ""; }, 1500);
     }
 
-    // --- Stats (unchanged from last version) ---
+    /* Stats — same as before */
     function loadStats() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY_STATS);
@@ -1281,7 +1305,7 @@
       document.body.classList.add("theme-" + themeSelect.value);
     }
 
-    // events
+    // Event wiring
     numKeys.forEach(btn => {
       btn.addEventListener("click", () => handleNumberInput(btn.dataset.num));
     });
@@ -1306,7 +1330,7 @@
     resetStatsBtn.addEventListener("click", resetStats);
     statsModal.addEventListener("click", (e)=>{ if(e.target===statsModal) closeStatsModal(); });
 
-    // boot
+    // Boot
     buildGrid();
     if (!loadState()) {
       applyTheme();

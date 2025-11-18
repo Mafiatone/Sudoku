@@ -11,36 +11,56 @@
       --bg-card-soft: #0b1120;
       --text-main: #f9fafb;
       --text-muted: #9ca3af;
+
       --accent: #fbbf24;
-      --accent-soft: rgba(251,191,36,0.16);
+      --accent-soft: rgba(251,191,36,0.25);
+
       --grid-line: #111827;
       --grid-line-bold: #1f2937;
+
       --given: #e5e7eb;
       --entry: #f9fafb;
       --note: #9ca3af;
-      --related: rgba(156,163,175,0.15);
-      --selected: rgba(56,189,248,0.25);
+
+      /* Selection + matching highlights – brighter now */
+      --related: rgba(148,163,184,0.40);
+      --selected: rgba(56,189,248,0.65);
+      --highlight-number: rgba(251,191,36,0.60);
+
       --error-bg: #facc15;
       --error-text: #111827;
-      --highlight-number: rgba(251,191,36,0.18);
     }
 
-    /* THEMES – pushed back towards the earlier neon look */
+    /* THEMES – punchy neon */
 
     body.theme-neon-green {
-      --accent: #22c55e; /* bright green */
-      --accent-soft: rgba(34,197,94,0.40);
-      --grid-line: #16a34a;        /* vivid green grid */
-      --grid-line-bold: #bbf7d0;   /* light neon edges */
-      --highlight-number: rgba(74,222,128,0.28);
+      --accent: #22c55e;
+      --accent-soft: rgba(34,197,94,0.55);
+      --grid-line: #16a34a;
+      --grid-line-bold: #bbf7d0;
+      --highlight-number: rgba(74,222,128,0.70);
+      --selected: rgba(45,212,191,0.75);
+      --related: rgba(45,212,191,0.35);
     }
 
     body.theme-neon-pink {
-      --accent: #fb37a3; /* hot neon pink */
-      --accent-soft: rgba(251,55,163,0.45);
-      --grid-line: #be185d;        /* strong pink grid */
-      --grid-line-bold: #fb7185;   /* neon-ish box borders */
-      --highlight-number: rgba(251,113,133,0.30);
+      --accent: #fb37a3;
+      --accent-soft: rgba(251,55,163,0.65);
+      --grid-line: #db2777;
+      --grid-line-bold: #f9a8d4;
+      --highlight-number: rgba(251,113,133,0.75);
+      --selected: rgba(244,114,182,0.75);
+      --related: rgba(244,114,182,0.35);
+    }
+
+    body.theme-neon-yellow {
+      --accent: #facc15;
+      --accent-soft: rgba(250,204,21,0.6);
+      --grid-line: #f59e0b;
+      --grid-line-bold: #fef9c3;
+      --highlight-number: rgba(250,204,21,0.8);
+      --selected: rgba(252,211,77,0.75);
+      --related: rgba(252,211,77,0.35);
     }
 
     body.theme-high-contrast {
@@ -50,18 +70,22 @@
       --text-main: #ffffff;
       --text-muted: #9ca3af;
       --accent: #f97316;
-      --accent-soft: rgba(249,115,22,0.32);
+      --accent-soft: rgba(249,115,22,0.55);
       --grid-line: #4b5563;
       --grid-line-bold: #e5e7eb;
-      --highlight-number: rgba(249,115,22,0.2);
+      --highlight-number: rgba(249,115,22,0.8);
+      --selected: rgba(52,211,153,0.8);
+      --related: rgba(148,163,184,0.45);
     }
 
     body.theme-christmas {
       --accent: #22c55e;
-      --accent-soft: rgba(34,197,94,0.40);
+      --accent-soft: rgba(34,197,94,0.60);
       --grid-line: #14532d;
       --grid-line-bold: #b91c1c;
-      --highlight-number: rgba(220,38,38,0.32);
+      --highlight-number: rgba(34,197,94,0.80);
+      --selected: rgba(239,68,68,0.70);
+      --related: rgba(252,211,77,0.40);
     }
 
     * {
@@ -121,7 +145,7 @@
       border-radius: 999px;
       border: 1px solid rgba(148,163,184,0.4);
       color: var(--accent);
-      background: radial-gradient(circle at top left, rgba(251,191,36,0.12), rgba(15,23,42,0.8));
+      background: radial-gradient(circle at top left, rgba(251,191,36,0.15), rgba(15,23,42,0.8));
       white-space: nowrap;
     }
 
@@ -163,7 +187,6 @@
       border-radius: 999px;
       border: none;
       cursor: pointer;
-      /* neon-ish gradient, tinted by --accent per theme */
       background: radial-gradient(circle at 30% 0,
         #fee2e2 0,
         var(--accent) 40%,
@@ -174,7 +197,7 @@
       box-shadow:
         0 0 0 1px rgba(15,23,42,0.8),
         0 10px 30px rgba(0,0,0,0.9),
-        0 0 16px var(--accent-soft);
+        0 0 18px var(--accent-soft);
       white-space: nowrap;
     }
 
@@ -242,6 +265,7 @@
       cursor: pointer;
       text-align: center;
       font-size: 18px;
+      transition: box-shadow 0.15s ease-out;
     }
 
     .cell-inner {
@@ -257,24 +281,24 @@
       font-weight: 600;
     }
 
-    .cell.selected::before {
+    .cell.selected::before,
+    .cell.related::before,
+    .cell.same-number::before {
       content: "";
       position: absolute;
       inset: 0;
+      z-index: 0;
+    }
+
+    .cell.selected::before {
       background: var(--selected);
     }
 
     .cell.related:not(.selected)::before {
-      content: "";
-      position: absolute;
-      inset: 0;
       background: var(--related);
     }
 
     .cell.same-number:not(.selected)::before {
-      content: "";
-      position: absolute;
-      inset: 0;
       background: var(--highlight-number);
     }
 
@@ -456,7 +480,7 @@
       cursor: pointer;
     }
 
-    /* Completion animation overlay */
+    /* Completion animation overlay (for confetti) */
     .anim-overlay {
       position: fixed;
       inset: 0;
@@ -467,17 +491,6 @@
       z-index: 30;
       overflow: hidden;
     }
-    .anim-emoji {
-      position: absolute;
-      font-size: 32px;
-      animation: float-up 1.4s ease-out forwards;
-    }
-    @keyframes float-up {
-      from { transform: translate3d(var(--sx,0), 40px, 0) scale(0.6); opacity: 0; }
-      20% { opacity: 1; }
-      to { transform: translate3d(var(--sx,0), -140px, 0) scale(1.1); opacity: 0; }
-    }
-
     .anim-confetti-piece {
       position: absolute;
       width: 6px;
@@ -491,6 +504,28 @@
       from { transform: translate3d(var(--sx), -40px, 0) rotate(0deg); opacity: 0; }
       15% { opacity: 1; }
       to { transform: translate3d(var(--sx), 260px, 0) rotate(240deg); opacity: 0; }
+    }
+
+    /* Cell-based completion animations */
+
+    .cell-anim-glow {
+      animation: cellGlow 0.6s ease-in-out;
+    }
+    @keyframes cellGlow {
+      0%   { box-shadow: 0 0 0 0 rgba(251,191,36,0.0); }
+      30%  { box-shadow: 0 0 14px 4px rgba(251,191,36,0.9); }
+      100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.0); }
+    }
+
+    .cell-anim-tree {
+      animation: cellTree 0.7s ease-in-out;
+    }
+    @keyframes cellTree {
+      0%   { box-shadow: 0 0 0 0 rgba(34,197,94,0.0); }
+      25%  { box-shadow: 0 0 12px 4px rgba(34,197,94,0.95); }
+      55%  { box-shadow: 0 0 0 0 rgba(34,197,94,0.0); }
+      80%  { box-shadow: 0 0 12px 4px rgba(239,68,68,0.95); }
+      100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.0); }
     }
 
     @media (max-width: 420px) {
@@ -529,22 +564,26 @@
           <option value="easy">Easy</option>
           <option value="medium" selected>Medium</option>
           <option value="hard">Hard</option>
+          <option value="expert">Expert</option>
+          <option value="master">Master</option>
+          <option value="extreme">Extreme</option>
+          <option value="impossible">Impossible</option>
         </select>
       </div>
       <div class="select-wrap">
         <select id="theme">
           <option value="neon-green" selected>Neon Green</option>
           <option value="neon-pink">Neon Pink</option>
+          <option value="neon-yellow">Neon Yellow</option>
           <option value="high-contrast">High Contrast</option>
           <option value="christmas">Christmas</option>
         </select>
       </div>
       <div class="select-wrap">
         <select id="animation">
-          <option value="confetti" selected>Confetti</option>
-          <option value="tree">Tree</option>
-          <option value="smiley">Smiley</option>
-          <option value="stars">Stars</option>
+          <option value="grid" selected>Grid Glow</option>
+          <option value="tree">Tree Lights</option>
+          <option value="confetti">Confetti</option>
           <option value="off">Off</option>
         </select>
       </div>
@@ -585,7 +624,7 @@
     <div class="footer-row">
       <div>
         <span>Progress is saved locally.</span>
-        <span class="version">v0.45</span>
+        <span class="version">v1.00</span>
       </div>
       <div class="link" id="statsLink">Stats</div>
     </div>
@@ -622,44 +661,24 @@
   </div>
 
   <script>
-    /* --- Puzzle bank, rebalanced --- */
-    const PUZZLES = {
-      // Friendlier set – used for BOTH Easy and Medium
-      easy: [
-        "003020600900305001001806400008102900700000008006708200002609500800203009005010300",
-        "200080300060070084030500209000105408000000000402706000301007040720040060004010003",
-        "000000907000420180000705026100904000050000040000507009920108000034059000507000000",
-        "000000012000006003504007000008000600090020040001000200000700904800600000630000000"
-      ],
+    /* ---------------- Difficulty config & generator ---------------- */
 
-      // Medium now just shares the easy pool for a gentler experience.
-      medium: [
-        "003020600900305001001806400008102900700000008006708200002609500800203009005010300",
-        "200080300060070084030500209000105408000000000402706000301007040720040060004010003",
-        "000000907000420180000705026100904000050000040000507009920108000034059000507000000",
-        "000000012000006003504007000008000600090020040001000200000700904800600000630000000"
-      ],
-
-      // All the spicy ones (old medium + hard) live here now
-      hard: [
-        ".....6....59.....82....8....45........3........6..3.54...325..6..................",
-        "8..6..9.5.............2.31...7318.6.24.....73...........279.1..5...8..36..3......",
-        ".....1.7..3.5...2....9.4.....8......6.4.3.7..5....8....6..2....7..8.5.....9...3..",
-        "000260701680070090190004500820100040004602900050003028009300074040050036703018000",
-
-        "4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......",
-        "52...6.........7.13...........4..8..6......5...........418.........3..2...87.....",
-        "6.....8.3.4.7.................5.4.7.3..2.....1.6.......2.....5.....8.6......1....",
-        "48.3............71.2.......7.5....6....2..8.............1.76...3.....4......5....",
-        "....14....3....2...7..........9...3.6.1.............8.2.....1.4....5.6.....7.8...",
-        "......52..8.4......3...9...5.1...6..2..7........3.....6...1..........7.4.......3.",
-        "6.2.5.........3.4..........43...8....1....2........7..5..27...........81...6.....",
-        ".524.........7.1..............8.2...3.....6...9.5.....1.6.3...........897........"
-      ]
+    const DIFFICULTY_CONFIG = {
+      easy:       { minClues: 40, maxClues: 45, minRow: 3, minCol: 3, minBox: 4 },
+      medium:     { minClues: 36, maxClues: 39, minRow: 3, minCol: 3, minBox: 3 },
+      hard:       { minClues: 32, maxClues: 35, minRow: 2, minCol: 2, minBox: 2 },
+      expert:     { minClues: 28, maxClues: 31, minRow: 2, minCol: 2, minBox: 2 },
+      master:     { minClues: 25, maxClues: 27, minRow: 2, minCol: 2, minBox: 2 },
+      extreme:    { minClues: 22, maxClues: 24, minRow: 1, minCol: 1, minBox: 1 },
+      impossible: { minClues: 17, maxClues: 21, minRow: 1, minCol: 1, minBox: 1 }
     };
 
-    const STORAGE_KEY_STATE = "sudoku_v045_state";
-    const STORAGE_KEY_STATS = "sudoku_v042_stats"; // keep stats
+    const DIFFICULTY_KEYS = [
+      "easy","medium","hard","expert","master","extreme","impossible"
+    ];
+
+    const STORAGE_KEY_STATE = "sudoku_v100_state";
+    const STORAGE_KEY_STATS = "sudoku_stats_v1";
 
     const gridEl = document.getElementById("grid");
     const difficultySelect = document.getElementById("difficulty");
@@ -702,24 +721,48 @@
     let hintCount = 0;
     let currentDifficulty = difficultySelect.value;
 
+    /* ---------------- Utility ---------------- */
+
     function timeToString(sec) {
       sec = Math.max(0, Math.round(sec));
       const m = Math.floor(sec / 60);
       const s = sec % 60;
       return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
     }
+
     function randChoice(arr) {
       return arr[Math.floor(Math.random() * arr.length)];
     }
 
-    // Solver helpers
-    function cloneBoard(b) { return b.map(row => row.slice()); }
+    function randInt(min, max) {
+      return min + Math.floor(Math.random() * (max - min + 1));
+    }
+
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function cloneBoard(b) {
+      return b.map(row => row.slice());
+    }
+
+    function boxIndex(r,c) {
+      return Math.floor(r/3)*3 + Math.floor(c/3);
+    }
+
+    /* ---------------- Solver & generator ---------------- */
+
     function findEmpty(b) {
       for (let r = 0; r < 9; r++)
         for (let c = 0; c < 9; c++)
           if (b[r][c] === "0") return [r,c];
       return null;
     }
+
     function isValidPlacement(b,r,c,v) {
       for (let i=0;i<9;i++) {
         if (b[r][i] === v) return false;
@@ -731,14 +774,16 @@
           if (b[rr][cc] === v) return false;
       return true;
     }
-    function solveSudoku(initial) {
-      const b = cloneBoard(initial);
+
+    function solveOne(boardIn) {
+      const b = cloneBoard(boardIn);
       function backtrack() {
         const pos = findEmpty(b);
         if (!pos) return true;
         const [r,c] = pos;
-        for (let d=1; d<=9; d++) {
-          const v = String(d);
+        let digits = ["1","2","3","4","5","6","7","8","9"];
+        digits = shuffleArray(digits);
+        for (const v of digits) {
           if (isValidPlacement(b,r,c,v)) {
             b[r][c] = v;
             if (backtrack()) return true;
@@ -750,6 +795,90 @@
       if (!backtrack()) return null;
       return b;
     }
+
+    function countSolutions(boardIn, maxCount=2) {
+      const b = cloneBoard(boardIn);
+      let count = 0;
+      function backtrack() {
+        if (count >= maxCount) return;
+        const pos = findEmpty(b);
+        if (!pos) {
+          count++;
+          return;
+        }
+        const [r,c] = pos;
+        for (let d=1; d<=9; d++) {
+          const v = String(d);
+          if (isValidPlacement(b,r,c,v)) {
+            b[r][c] = v;
+            backtrack();
+            b[r][c] = "0";
+            if (count >= maxCount) return;
+          }
+        }
+      }
+      backtrack();
+      return count;
+    }
+
+    function generateSolvedBoard() {
+      const empty = Array.from({length:9}, () =>
+        Array.from({length:9}, () => "0")
+      );
+      const solved = solveOne(empty);
+      return solved;
+    }
+
+    function generatePuzzle(difficultyKey) {
+      const cfg = DIFFICULTY_CONFIG[difficultyKey] || DIFFICULTY_CONFIG.medium;
+      const targetClues = randInt(cfg.minClues, cfg.maxClues);
+
+      const solved = generateSolvedBoard();
+      const puzzle = cloneBoard(solved);
+
+      const rowCount = Array(9).fill(9);
+      const colCount = Array(9).fill(9);
+      const boxCount = Array(9).fill(9);
+
+      let clues = 81;
+
+      const positions = [];
+      for (let r=0;r<9;r++)
+        for (let c=0;c<9;c++)
+          positions.push([r,c]);
+      shuffleArray(positions);
+
+      for (const [r,c] of positions) {
+        if (clues <= targetClues) break;
+        if (puzzle[r][c] === "0") continue;
+
+        const bx = boxIndex(r,c);
+        if (rowCount[r] <= cfg.minRow) continue;
+        if (colCount[c] <= cfg.minCol) continue;
+        if (boxCount[bx] <= cfg.minBox) continue;
+
+        const saved = puzzle[r][c];
+        puzzle[r][c] = "0";
+        rowCount[r]--;
+        colCount[c]--;
+        boxCount[bx]--;
+        clues--;
+
+        const solCount = countSolutions(puzzle, 2);
+        if (solCount !== 1) {
+          // revert
+          puzzle[r][c] = saved;
+          rowCount[r]++;
+          colCount[c]++;
+          boxCount[bx]++;
+          clues++;
+        }
+      }
+
+      return { puzzle, solution: solved };
+    }
+
+    /* ---------------- Grid & rendering ---------------- */
 
     function buildGrid() {
       gridEl.innerHTML = "";
@@ -783,37 +912,15 @@
       }
     }
 
-    function loadPuzzleFromString(str) {
-      const chars = Array.from(str.replace(/[^0-9.]/g,""));
-      if (chars.length !== 81) throw new Error("Bad puzzle length");
-      board = [];
-      givens = [];
-      notes = [];
-      let idx = 0;
-      for (let r=0;r<9;r++) {
-        const row=[], gRow=[], nRow=[];
-        for (let c=0;c<9;c++) {
-          const ch = chars[idx++];
-          const v = (ch==="." || ch==="0") ? "0" : ch;
-          row.push(v);
-          gRow.push(v!=="0");
-          nRow.push(new Set());
-        }
-        board.push(row); givens.push(gRow); notes.push(nRow);
-      }
-      const solved = solveSudoku(board);
-      if (!solved) throw new Error("Puzzle unsolvable");
-      solution = solved;
-      initErrorGrid();
-    }
-
     function applyBoardToUI() {
       for (let r=0;r<9;r++) {
         for (let c=0;c<9;c++) {
           const cell = cells[r][c];
           const inner = cell.firstChild;
           const v = board[r][c];
-          cell.className = cell.className.split(" ")[0]; // reset but keep base .cell
+
+          // reset to base class + 3x3 borders
+          cell.className = "cell";
           if (c===2 || c===5) cell.classList.add("border-right-bold");
           if (r===2 || r===5) cell.classList.add("border-bottom-bold");
 
@@ -836,11 +943,27 @@
 
     function startNewGame(fromUserClick=false) {
       if (fromUserClick) pushStateToHistory();
-      const diff = difficultySelect.value;
-      currentDifficulty = diff;
-      const pool = PUZZLES[diff] || PUZZLES.easy;
-      const puzzleStr = randChoice(pool);
-      loadPuzzleFromString(puzzleStr);
+
+      currentDifficulty = difficultySelect.value;
+
+      const { puzzle, solution: solved } = generatePuzzle(currentDifficulty);
+      solution = solved;
+      board = cloneBoard(puzzle);
+
+      givens = [];
+      notes = [];
+      for (let r=0;r<9;r++) {
+        const gRow = [];
+        const nRow = [];
+        for (let c=0;c<9;c++) {
+          gRow.push(board[r][c] !== "0");
+          nRow.push(new Set());
+        }
+        givens.push(gRow);
+        notes.push(nRow);
+      }
+
+      initErrorGrid();
       selectedCell = null;
       notesMode = false;
       notesKey.classList.remove("active");
@@ -925,6 +1048,8 @@
       }
       return anyError;
     }
+
+    /* ---------------- Input handling ---------------- */
 
     function handleNumberInput(num) {
       if (!selectedCell) return;
@@ -1047,6 +1172,8 @@
       checkCompletion();
     }
 
+    /* ---------------- Completion & keypad ---------------- */
+
     function isBoardComplete() {
       for (let r=0;r<9;r++)
         for (let c=0;c<9;c++)
@@ -1099,14 +1226,13 @@
       });
     }
 
-    /* Completion animations (unchanged) */
     function playCompletionAnimation() {
       const mode = animSelect.value;
       if (mode === "off") return;
-      animOverlay.innerHTML = "";
 
       if (mode === "confetti") {
-        for (let i=0;i<70;i++) {
+        animOverlay.innerHTML = "";
+        for (let i=0;i<80;i++) {
           const piece = document.createElement("div");
           piece.className = "anim-confetti-piece";
           const hue = 40 + Math.random()*280;
@@ -1115,24 +1241,51 @@
           piece.style.setProperty("--sx", `${(Math.random()-0.5)*60}px`);
           animOverlay.appendChild(piece);
         }
-      } else {
-        const centerEmoji =
-          mode === "tree" ? "🎄" :
-          mode === "smiley" ? "😄" :
-          "✨";
-        for (let i=0;i<8;i++) {
-          const span = document.createElement("div");
-          span.className = "anim-emoji";
-          span.textContent = centerEmoji;
-          const offset = (i-3.5)*32;
-          span.style.setProperty("--sx", `${offset}px`);
-          animOverlay.appendChild(span);
-        }
+        setTimeout(() => { animOverlay.innerHTML = ""; }, 1400);
+        return;
       }
-      setTimeout(() => { animOverlay.innerHTML = ""; }, 1500);
+
+      if (mode === "grid") {
+        let delay = 0;
+        for (let r=0;r<9;r++) {
+          for (let c=0;c<9;c++) {
+            const cell = cells[r][c];
+            setTimeout(() => {
+              cell.classList.add("cell-anim-glow");
+              setTimeout(() => cell.classList.remove("cell-anim-glow"), 650);
+            }, delay);
+            delay += 35;
+          }
+        }
+        return;
+      }
+
+      if (mode === "tree") {
+        const pattern = [
+          [0,4],
+          [1,3],[1,4],[1,5],
+          [2,2],[2,3],[2,4],[2,5],[2,6],
+          [3,1],[3,2],[3,3],[3,4],[3,5],[3,6],[3,7],
+          [4,2],[4,3],[4,4],[4,5],[4,6],
+          [5,3],[5,4],[5,5],
+          [6,4],
+          [7,4]
+        ];
+        pattern.forEach(( [r,c], idx ) => {
+          if (cells[r] && cells[r][c]) {
+            const cell = cells[r][c];
+            const delay = idx * 90;
+            setTimeout(() => {
+              cell.classList.add("cell-anim-tree");
+              setTimeout(() => cell.classList.remove("cell-anim-tree"), 750);
+            }, delay);
+          }
+        });
+      }
     }
 
-    /* Stats — same as before */
+    /* ---------------- Stats ---------------- */
+
     function loadStats() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY_STATS);
@@ -1140,22 +1293,31 @@
           return {
             badges:{noHints:0,noErrors:0,perfect:0},
             streak:{days:0,lastDate:null},
-            levels:{easy:{times:[]},medium:{times:[]},hard:{times:[]}}
+            levels: DIFFICULTY_KEYS.reduce((acc,k)=>{acc[k]={times:[]};return acc;}, {})
           };
         }
-        return JSON.parse(raw);
+        const parsed = JSON.parse(raw);
+        if (!parsed.levels) parsed.levels = {};
+        for (const key of DIFFICULTY_KEYS) {
+          if (!parsed.levels[key]) parsed.levels[key] = {times:[]};
+        }
+        if (!parsed.badges) parsed.badges = {noHints:0,noErrors:0,perfect:0};
+        if (!parsed.streak) parsed.streak = {days:0,lastDate:null};
+        return parsed;
       } catch {
         return {
           badges:{noHints:0,noErrors:0,perfect:0},
           streak:{days:0,lastDate:null},
-          levels:{easy:{times:[]},medium:{times:[]},hard:{times:[]}}
+          levels: DIFFICULTY_KEYS.reduce((acc,k)=>{acc[k]={times:[]};return acc;}, {})
         };
       }
     }
     let stats = loadStats();
+
     function saveStats() {
       localStorage.setItem(STORAGE_KEY_STATS, JSON.stringify(stats));
     }
+
     function recordStats() {
       const level = currentDifficulty;
       if (!stats.levels[level]) stats.levels[level] = {times:[]};
@@ -1190,10 +1352,11 @@
       stats = loadStats();
       badgeRow.textContent =
         `Badges – No Hints: ${stats.badges.noHints} · No Errors: ${stats.badges.noErrors} · Perfect: ${stats.badges.perfect}`;
-      const levels = ["easy","medium","hard"];
+
       statsBody.innerHTML = "";
       let totalGames = 0;
-      for (const lvl of levels) {
+
+      for (const lvl of DIFFICULTY_KEYS) {
         const rowData = stats.levels[lvl] || {times:[]};
         const times = rowData.times || [];
         totalGames += times.length;
@@ -1205,29 +1368,35 @@
           sum+=s;
         }
         const avg = times.length ? Math.round(sum/times.length) : null;
+        const niceName = lvl[0].toUpperCase()+lvl.slice(1);
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${lvl[0].toUpperCase()+lvl.slice(1)}</td>
+          <td>${niceName}</td>
           <td>${times.length}</td>
           <td>${formatTimeOrDash(best)}</td>
           <td>${formatTimeOrDash(avg)}</td>
           <td>${formatTimeOrDash(worst)}</td>`;
         statsBody.appendChild(tr);
       }
+
       const streakDays = stats.streak.days || 0;
       totalsRow.textContent = `Total games: ${totalGames} · Streak: ${streakDays} day(s)`;
       statsModal.classList.add("show");
     }
+
     function closeStatsModal() { statsModal.classList.remove("show"); }
+
     function resetStats() {
       stats = {
         badges:{noHints:0,noErrors:0,perfect:0},
         streak:{days:0,lastDate:null},
-        levels:{easy:{times:[]},medium:{times:[]},hard:{times:[]}}
+        levels: DIFFICULTY_KEYS.reduce((acc,k)=>{acc[k]={times:[]};return acc;}, {})
       };
       saveStats();
       showStatsModal();
     }
+
+    /* ---------------- State persistence ---------------- */
 
     function saveState(completed=false) {
       const state = {
@@ -1260,7 +1429,7 @@
         currentDifficulty = state.difficulty || "medium";
         difficultySelect.value = currentDifficulty;
         themeSelect.value = state.theme || "neon-green";
-        animSelect.value = state.animation || "confetti";
+        animSelect.value = state.animation || "grid";
         applyTheme();
 
         board = state.board;
@@ -1299,13 +1468,15 @@
       document.body.classList.remove(
         "theme-neon-green",
         "theme-neon-pink",
+        "theme-neon-yellow",
         "theme-high-contrast",
         "theme-christmas"
       );
       document.body.classList.add("theme-" + themeSelect.value);
     }
 
-    // Event wiring
+    /* ---------------- Events & boot ---------------- */
+
     numKeys.forEach(btn => {
       btn.addEventListener("click", () => handleNumberInput(btn.dataset.num));
     });
@@ -1315,6 +1486,7 @@
     checkKey.addEventListener("click", handleCheck);
     undoKey.addEventListener("click", handleUndo);
     hintKey.addEventListener("click", handleHint);
+
     difficultySelect.addEventListener("change", () => {
       currentDifficulty = difficultySelect.value;
       startNewGame(true);
@@ -1330,7 +1502,6 @@
     resetStatsBtn.addEventListener("click", resetStats);
     statsModal.addEventListener("click", (e)=>{ if(e.target===statsModal) closeStatsModal(); });
 
-    // Boot
     buildGrid();
     if (!loadState()) {
       applyTheme();
